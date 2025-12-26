@@ -1,9 +1,49 @@
 /* acronymle.css — styles for Acronymle standalone page */
+/* Added .box.correct so correct guesses are highlighted in green */
 
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+}
+
+/* Green style for fully-correct confirmed guesses */
+.box.correct {
+  background-color: #6aaa64;
+  color: #fff;
+  border-color: #6aaa64;
+}
+
+/* Indicators (top row) that show number of incorrect guesses */
+.indicators {
+  display: flex;
+  gap: 8px;
+  margin: 12px 0 18px 0;
+}
+
+.indicator {
+  width: 44px;
+  height: 44px;
+  border: 2px solid #9ca3af;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  color: #6b7280;
+  border-radius: 6px;
+}
+
+.indicator.wrong {
+  background-color: #ef4444; /* red */
+  color: #fff;
+  border-color: #ef4444;
+}
+
+.box.correct {
+  background-color: #6aaa64;
+  color: white;
+  border-color: #6aaa64;
 }
 
 body {

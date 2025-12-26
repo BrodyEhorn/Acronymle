@@ -31,6 +31,16 @@ app.get('/api/solutions', (req, res) => {
   res.json(db.solutions || []);
 });
 
+// Check a guess against the current solution
+// Expects JSON body: { guess: 'xxxxx' }
+// Returns: { correct: true/false }
+app.post('/api/check', (req, res) => {
+  const guess = (req.body && req.body.guess || '').toLowerCase();
+  const solution = (db.solutions && db.solutions[0] && db.solutions[0].word) || '';
+  const correct = guess === solution;
+  res.json({ correct });
+});
+
 // Serve frontend build if present
 const frontendBuildPath = path.join(__dirname, '..', 'frontend', 'build');
 app.use(express.static(frontendBuildPath));

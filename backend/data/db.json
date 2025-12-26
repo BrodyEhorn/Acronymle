@@ -1,19 +1,5 @@
 {
     "solutions": [
-        {"word": "ninja", "id": 1},
-        {"word": "apple", "id": 2},
-        {"word": "grape", "id": 3},
-        {"word": "brick", "id": 4},
-        {"word": "flame", "id": 5},
-        {"word": "stone", "id": 6},
-        {"word": "plant", "id": 7},
-        {"word": "cloud", "id": 8},
-        {"word": "river", "id": 9},
-        {"word": "table", "id": 10}, 
-        {"word": "chair", "id": 11},
-        {"word": "light", "id": 12},
-        {"word": "sound", "id": 13},
-        {"word": "space", "id": 14},
-        {"word": "earth", "id": 15}
+        {"word": "hello", "id": 1}
     ]
 }
