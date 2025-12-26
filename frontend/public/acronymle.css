@@ -14,6 +14,12 @@
   border-color: #6aaa64;
 }
 
+/* Visual style for the auto-filled first box */
+.box.prefilled {
+  background-color: #f3f4f6;
+  color: #111827;
+}
+
 /* Indicators (top row) that show number of incorrect guesses */
 .indicators {
   display: flex;
@@ -32,12 +38,37 @@
   font-weight: 700;
   color: #6b7280;
   border-radius: 6px;
+  position: relative; /* allow check overlay */
+}
+
+/* small green check overlay added when the answer is correct; keeps the red X visible */
+.indicator .check {
+  position: absolute;
+  right: -6px;
+  top: -6px;
+  width: 20px;
+  height: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #6aaa64;
+  color: #fff;
+  border-radius: 50%;
+  font-size: 12px;
+  box-shadow: 0 1px 0 rgba(0,0,0,0.12);
 }
 
 .indicator.wrong {
   background-color: #ef4444; /* red */
   color: #fff;
   border-color: #ef4444;
+}
+
+/* Green state for indicators when answer is correct */
+.indicator.correct {
+  background-color: #6aaa64; /* green */
+  color: #fff;
+  border-color: #6aaa64;
 }
 
 .box.correct {
@@ -83,17 +114,43 @@ h1 {
   justify-content: center;
 }
 
-.box {
-  width: 56px;
-  height: 56px;
-  border: 2px solid #9ca3af;
-  background-color: white;
+/* Input-line UI replacing the 5 letter boxes */
+.input-area {
   display: flex;
   align-items: center;
-  justify-content: center;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+
+.guess-input {
+  width: 100%;
+  min-width: 240px;
+  height: 56px;
+  border: none;
+  border-bottom: 2px solid #9ca3af;
+  background: transparent;
   font-size: 1.5rem;
   font-weight: bold;
   text-transform: uppercase;
+  outline: none;
+  padding: 0 8px;
+}
+
+/* keep caret after the locked first letter by adding a small left padding when unlocked */
+.guess-input::placeholder {
+  text-transform: uppercase;
+}
+/* Input when correct */
+.input-area.correct .locked-letter,
+.input-area.correct .guess-input {
+  background-color: #6aaa64;
+  color: #fff;
+  border-color: #6aaa64;
+}
+
+/* When disabled/over */
+.guess-input:disabled {
+  opacity: 0.95;
 }
 
 .keyboard {

@@ -21,19 +21,21 @@
 
   // Default solution: 'hello' so correctness works even if backend is unreachable
   let solution = 'hello';
+  // The locked first letter (auto-filled) — defaults from solution
+  let lockedFirstLetter = solution[0];
+  // number of editable characters (word length - 1)
+  let maxSuffixLen = Math.max(0, solution.length - 1);
 
-  // Try to load the solution from the backend; if it fails we keep the default
-  async function loadSolution() {
-    try {
-      const res = await fetch('/api/solutions');
-      if (!res.ok) throw new Error('no solutions');
-      const arr = await res.json();
-      if (Array.isArray(arr) && arr.length > 0 && arr[0].word) {
-        solution = String(arr[0].word).toLowerCase();
-      }
-    } catch (err) {
-      // fallback to default 'hello'
-    }
+  // Load the solution locally. API calls are disabled for now (TODO: re-enable later).
+  function loadSolution() {
+    // NOTE: Backend integration for fetching the solution is intentionally
+    // disabled. The app uses the local `solution` variable for checks.
+    lockedFirstLetter = solution[0] || lockedFirstLetter;
+    maxSuffixLen = Math.max(0, solution.length - 1);
+    // set input max length to total word length
+    const input = el('guess-input');
+    if (input) input.maxLength = solution.length;
+    currentGuess = '';
   }
 
   // Track incorrect guess indicators
@@ -48,80 +50,68 @@
     }
   }
 
+  // Turn only the next indicator (where a wrong guess would land) into a full green check box
+  function markNextIndicatorCorrect() {
+    const index = Math.min(maxIndicators - 1, incorrectCount);
+    const ind = document.querySelector(`#guess-indicators .indicator[data-index="${index}"]`);
+    if (ind) {
+      ind.classList.remove('wrong');
+      ind.classList.add('correct');
+      ind.textContent = '✓';
+    }
+  }
+
   // Helper to safely get an element by id
   function el(id) {
     return document.getElementById(id);
   }
 
-  // Render a single 5-letter row. Shows the current typing state or the correct result when solved.
+  // Render input line: include locked first letter inside the input value; if solved, show green state and disable input
   function renderGrid() {
-    const grid = el('grid');
-    if (!grid) return; // defensive: element may not exist
+    const input = el('guess-input');
+    const area = el('input-area');
+    if (!input || !area) return;
 
-    grid.innerHTML = '';
+    if (lastGuessWasCorrect && lastCorrectGuess) {
+      // show full correct word and mark input area correct
+      input.value = lastCorrectGuess.toUpperCase();
+      input.disabled = true;
+      area.classList.add('correct');
+    } else {
+      // prefix locked first letter and show typed suffix
+      input.value = (lockedFirstLetter ? lockedFirstLetter.toUpperCase() : '') + (currentGuess || '').toUpperCase();
+      input.disabled = false;
+      area.classList.remove('correct');
 
-    const row = document.createElement('div');
-    row.className = 'row';
-
-    // If the last confirmed guess was correct, display it; otherwise, show the current guess
-    const display = (lastGuessWasCorrect && lastCorrectGuess) ? lastCorrectGuess : currentGuess;
-
-    for (let j = 0; j < 5; j++) {
-      const box = document.createElement('div');
-      box.className = 'box';
-
-      if (lastGuessWasCorrect && lastCorrectGuess) {
-        box.classList.add('correct');
-      }
-
-      box.textContent = (display && display[j]) ? display[j] : '';
-      row.appendChild(box);
+      // keep the caret at end
+      try { input.setSelectionRange(input.value.length, input.value.length); } catch (e) {}
     }
-
-    grid.appendChild(row);
   }
 
   // Handle clicks from the on-screen keyboard (or programmatic calls)
-  // - ENTER finalizes a 5-letter guess
+  // - ENTER finalizes a guess with at least one character (including locked first letter)
   // - DELETE removes the last letter
-  // - Letters append up to 5 letters
+  // - Letters append up to the configured suffix length
   async function handleKeyClick(key) {
     if (isGameOver) return;
 
     if (key === 'ENTER') {
-      if (currentGuess.length === 5) {
-        // First check locally against the known solution (so typing 'hello' works without backend)
-        let correct = (currentGuess.toLowerCase() === solution);
+      // Accept guesses that are at least 1 character long (including the locked first letter)
+      const fullGuessRaw = (lockedFirstLetter || '') + currentGuess;
+      if (fullGuessRaw.length >= 1) {
+        const fullGuess = fullGuessRaw.toLowerCase();
 
-        // If not locally correct, attempt to validate with the backend (best-effort)
-        if (!correct) {
-          async function tryCheck(url) {
-            const res = await fetch(url, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ guess: currentGuess })
-            });
-            if (!res.ok) throw new Error('non-OK response');
-            const data = await res.json();
-            return !!data.correct;
-          }
+        // Local-only validation (no network calls). API validation can be implemented later.
+        const correct = (fullGuess === solution);
 
-          try {
-            correct = await tryCheck('/api/check');
-          } catch (err1) {
-            try {
-              correct = await tryCheck('http://localhost:4000/api/check');
-            } catch (err2) {
-              console.warn('Failed to validate guess via /api/check and direct backend', err1, err2);
-            }
-          }
-        }
 
         if (correct) {
           // keep the correct guess visible and mark green
-          lastCorrectGuess = currentGuess;
+          lastCorrectGuess = lockedFirstLetter + currentGuess;
           lastGuessWasCorrect = true;
           currentGuess = '';
+          // mark only the next indicator as correct (do not change existing red Xs)
+          markNextIndicatorCorrect();
           isGameOver = true; // all boxes for last row should turn green
         } else {
           // incorrect guess: clear the letter boxes and mark an X in the indicators
@@ -136,9 +126,11 @@
         }
       }
     } else if (key === 'DELETE') {
+      // do not allow removing the locked first letter; only remove typed suffix
       currentGuess = currentGuess.slice(0, -1);
     } else {
-      if (currentGuess.length < 5) {
+      // only allow typing into the editable suffix (positions 1..maxSuffixLen)
+      if (currentGuess.length < maxSuffixLen) {
         currentGuess += key;
       }
     }
@@ -163,6 +155,66 @@
         rowElement.appendChild(button);
       });
     });
+
+    // wire the text input for physical typing
+    const input = el('guess-input');
+    if (input) {
+      // keep input prefixed with the locked first letter; users type the remaining suffix letters
+      input.addEventListener('input', (e) => {
+        let v = String(e.target.value || '');
+        // remove non-letters
+        v = v.replace(/[^a-zA-Z]/g, '');
+        // if the user removed or changed the first char, re-insert lockedFirstLetter at start
+        if (!lockedFirstLetter) lockedFirstLetter = '';
+        if (v.length === 0) {
+          currentGuess = '';
+          e.target.value = (lockedFirstLetter || '').toUpperCase();
+          return;
+        }
+
+        // Ensure first char equals lockedFirstLetter
+        const first = v.charAt(0).toLowerCase();
+        if (first !== (lockedFirstLetter || '').toLowerCase()) {
+          v = (lockedFirstLetter || '') + v; // re-insert locked first letter
+        }
+
+        // trim to locked + suffix letters
+        const suffix = v.slice(1, 1 + maxSuffixLen);
+        currentGuess = suffix.toLowerCase();
+
+        // set displayed value to locked + suffix uppercase
+        e.target.value = ((lockedFirstLetter || '') + currentGuess).toUpperCase();
+      });
+
+      // handle Enter and Backspace via keyboard
+      input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          handleKeyClick('ENTER');
+        } else if (e.key === 'Backspace') {
+          // prevent deleting the locked first character
+          const selStart = input.selectionStart || 0;
+          if (selStart <= 1) {
+            e.preventDefault();
+            return;
+          }
+          // otherwise allow backspace and sync currentGuess on next tick
+          setTimeout(() => {
+            const v = input.value.replace(/[^a-zA-Z]/g, '');
+            const suffix = v.slice(1, 1 + maxSuffixLen);
+            currentGuess = suffix.toLowerCase();
+            renderGrid();
+          }, 0);
+        }
+      });
+
+      // ensure clicking focuses after the locked char
+      input.addEventListener('focus', () => {
+        setTimeout(() => {
+          try { input.setSelectionRange(input.value.length, input.value.length); } catch (e) {}
+        }, 0);
+      });
+    }
   }
 
   // Initialize the UI once the DOM is ready. Use DOMContentLoaded for safety.
@@ -173,12 +225,17 @@
       const ind = document.querySelector(`#guess-indicators .indicator[data-index="${i}"]`);
       if (ind) {
         ind.classList.remove('wrong');
+        ind.classList.remove('correct');
         ind.textContent = '';
       }
     }
 
     renderGrid();
     renderKeyboard();
+
+    // set focus to input for quick typing
+    const input = el('guess-input');
+    if (input) input.focus();
   });
 
 })();

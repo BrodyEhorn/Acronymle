@@ -19,7 +19,10 @@
       <div class="indicator" data-index="4"></div>
     </div>
 
-    <div class="grid" id="grid"></div>
+    <!-- Single input line: first letter is autofilled into the input; users type the remaining suffix letters -->
+    <div id="input-area" class="input-area">
+      <input id="guess-input" class="guess-input" type="text" maxlength="9" autocomplete="off" inputmode="latin" />
+    </div>
 
     <div class="keyboard">
       <div class="keyboard-row" id="row1"></div>
