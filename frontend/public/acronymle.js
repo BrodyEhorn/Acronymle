@@ -14,33 +14,76 @@
   ];
 
   // --- Game state ---
-  let currentGuess = ''; // current active (typing) guess
+  // three target words (suffixes typed by user), plus activeWord index
+  let currentGuesses = ['', '', ''];
+  let activeWord = 0;
   let isGameOver = false;
-  let lastGuessWasCorrect = false; // true when the last confirmed guess was correct (used to render green)
-  let lastCorrectGuess = ''; // stores the correct guess when solved
+  let lastGuessWasCorrect = false; // true when the last confirmed combined guess was correct
+  let lastCorrectGuess = ''; // stores the correct combined guess when solved
 
-  // Default solution: 'hello' so correctness works even if backend is unreachable
-  let solution = 'hello';
-  // The locked first letter (auto-filled) — defaults from solution
-  let lockedFirstLetter = solution[0];
-  // number of editable characters (word length - 1)
-  let maxSuffixLen = Math.max(0, solution.length - 1);
+  // Default solution words (three words)
+  const solutionWords = ['on', 'the', 'way'];
+  const combinedSolution = solutionWords.join(' ');
+  // locked first letters per word (auto-filled from solutionWords)
+  let lockedFirstLetters = solutionWords.map(w => (w && w[0]) || '');
+  // number of editable characters (word length - 1) per word (allow up to 9)
+  let maxSuffixLens = solutionWords.map(w => Math.max(0, (w && w.length) ? Math.min(9, w.length - 1) : 9));
 
   // Load the solution locally. API calls are disabled for now (TODO: re-enable later).
   function loadSolution() {
     // NOTE: Backend integration for fetching the solution is intentionally
-    // disabled. The app uses the local `solution` variable for checks.
-    lockedFirstLetter = solution[0] || lockedFirstLetter;
-    maxSuffixLen = Math.max(0, solution.length - 1);
-    // set input max length to total word length
-    const input = el('guess-input');
-    if (input) input.maxLength = solution.length;
-    currentGuess = '';
+    // disabled. The app uses the local `solutionWords` variable for checks.
+    lockedFirstLetters = solutionWords.map(w => (w && w[0]) || '');
+    maxSuffixLens = solutionWords.map(w => Math.max(0, (w && w.length) ? Math.min(9, w.length - 1) : 9));
+    // set input max length to 10 for all word inputs and reset current guesses
+    for (let i = 0; i < 3; i++) {
+      const input = el(`guess-input-${i}`);
+      if (input) input.maxLength = 10;
+      currentGuesses[i] = '';
+    }
+    activeWord = 0;
   }
 
-  // Track incorrect guess indicators
+  // Track incorrect guess indicators and store wrong guesses
   const maxIndicators = 5;
   let incorrectCount = 0;
+  const incorrectGuesses = [];
+
+  function renderWrongGuesses() {
+    const list = document.getElementById('wrong-guesses');
+    if (!list) return;
+    list.innerHTML = '';
+    incorrectGuesses.forEach((g) => {
+      // normalize to { words: [...], correctness: [...] }
+      let words = [];
+      let correctness = [];
+      if (typeof g === 'string') {
+        words = g.split(' ');
+        correctness = words.map(() => false);
+      } else if (g.words && Array.isArray(g.words)) {
+        words = g.words;
+        correctness = g.correctness || words.map(() => false);
+      } else if (g.text) {
+        words = g.text.split(' ');
+        correctness = (g.correct === true) ? words.map(() => true) : words.map(() => false);
+      } else {
+        return;
+      }
+
+      const li = document.createElement('li');
+      li.className = 'guess-item';
+      words.forEach((w, i) => {
+        const span = document.createElement('span');
+        span.className = 'guess-word';
+        if (correctness[i]) span.classList.add('correct');
+        else span.classList.add('wrong');
+        span.textContent = w;
+        li.appendChild(span);
+      });
+
+      list.appendChild(li);
+    });
+  }
 
   function markIndicator(i) {
     const ind = document.querySelector(`#guess-indicators .indicator[data-index="${i}"]`);
@@ -68,23 +111,32 @@
 
   // Render input line: include locked first letter inside the input value; if solved, show green state and disable input
   function renderGrid() {
-    const input = el('guess-input');
-    const area = el('input-area');
-    if (!input || !area) return;
+    for (let i = 0; i < 3; i++) {
+      const input = el(`guess-input-${i}`);
+      const area = el(`input-area-${i}`);
+      if (!input || !area) continue;
 
-    if (lastGuessWasCorrect && lastCorrectGuess) {
-      // show full correct word and mark input area correct
-      input.value = lastCorrectGuess.toUpperCase();
-      input.disabled = true;
-      area.classList.add('correct');
-    } else {
-      // prefix locked first letter and show typed suffix
-      input.value = (lockedFirstLetter ? lockedFirstLetter.toUpperCase() : '') + (currentGuess || '').toUpperCase();
-      input.disabled = false;
-      area.classList.remove('correct');
-
-      // keep the caret at end
-      try { input.setSelectionRange(input.value.length, input.value.length); } catch (e) {}
+      if (lastGuessWasCorrect && lastCorrectGuess) {
+        // on solved state, show solution word (do not change input background color)
+        input.value = (solutionWords[i] || '').toUpperCase();
+        input.disabled = true;
+        // ensure input area is not styled as 'correct'
+        area.classList.remove('correct');
+      } else {
+        input.value = ((lockedFirstLetters[i] || '').toUpperCase()) + (currentGuesses[i] || '').toUpperCase();
+        input.disabled = false;
+        // ensure the 'correct' class isn't present for active/inactive states
+        area.classList.remove('correct');
+        if (i === activeWord) {
+          area.classList.add('active');
+        } else {
+          area.classList.remove('active');
+        }
+        // keep the caret at end if active
+        if (i === activeWord) {
+          try { input.setSelectionRange(input.value.length, input.value.length); } catch (e) {}
+        }
+      }
     }
   }
 
@@ -96,42 +148,96 @@
     if (isGameOver) return;
 
     if (key === 'ENTER') {
-      // Accept guesses that are at least 1 character long (including the locked first letter)
-      const fullGuessRaw = (lockedFirstLetter || '') + currentGuess;
-      if (fullGuessRaw.length >= 1) {
-        const fullGuess = fullGuessRaw.toLowerCase();
+      // If not the last word, move focus to next word
+      if (activeWord < 2) {
+        activeWord = Math.min(2, activeWord + 1);
+        renderGrid();
+        // focus the next input so typing continues there
+        const nextInput = el(`guess-input-${activeWord}`);
+        if (nextInput) nextInput.focus();
+        return;
+      }
 
-        // Local-only validation (no network calls). API validation can be implemented later.
-        const correct = (fullGuess === solution);
-
-
-        if (correct) {
-          // keep the correct guess visible and mark green
-          lastCorrectGuess = lockedFirstLetter + currentGuess;
-          lastGuessWasCorrect = true;
-          currentGuess = '';
-          // mark only the next indicator as correct (do not change existing red Xs)
-          markNextIndicatorCorrect();
-          isGameOver = true; // all boxes for last row should turn green
-        } else {
-          // incorrect guess: clear the letter boxes and mark an X in the indicators
-          incorrectCount = Math.min(maxIndicators, incorrectCount + 1);
-          markIndicator(incorrectCount - 1);
-          lastGuessWasCorrect = false;
-          currentGuess = '';
-
-          if (incorrectCount >= maxIndicators) {
-            isGameOver = true; // reached the indicator limit
-          }
+      // activeWord === 2: attempt to submit only if all three words are non-empty
+      const fullWords = [];
+      for (let i = 0; i < 3; i++) {
+        const word = (lockedFirstLetters[i] || '') + (currentGuesses[i] || '');
+        if (!word || word.length < 1) {
+          // can't submit until all words have at least one character
+          return;
         }
+        fullWords.push(word);
+      }
+
+      const combined = fullWords.join(' ').toLowerCase();
+      const correct = (combined === combinedSolution.toLowerCase());
+
+      if (correct) {
+        // correct combined guess
+        lastCorrectGuess = fullWords.join(' ');
+        lastGuessWasCorrect = true;
+        // mark next indicator as correct and record in guesses panel
+        markNextIndicatorCorrect();
+        const displayGuess = lastCorrectGuess.toUpperCase();
+        const wordsUpper = lastCorrectGuess.toUpperCase().split(' ');
+        const perWordCorrect = wordsUpper.map((w, i) => w.toLowerCase() === (solutionWords[i] || '').toLowerCase());
+        const existing = incorrectGuesses.find(x => ((x.words ? x.words.join(' ') : (x.text || '')).toUpperCase() === displayGuess));
+        if (existing) {
+          existing.words = wordsUpper;
+          existing.correctness = perWordCorrect;
+        } else if (incorrectGuesses.length < maxIndicators) {
+          incorrectGuesses.push({ words: wordsUpper, correctness: perWordCorrect });
+        }
+        renderWrongGuesses();
+        currentGuesses = ['', '', ''];
+        activeWord = 0;
+        renderGrid();
+        // focus first input after submission
+        const firstInput = el('guess-input-0');
+        if (firstInput) {
+          firstInput.focus();
+          try { firstInput.setSelectionRange(firstInput.value.length, firstInput.value.length); } catch (e) {}
+        }
+        isGameOver = true; 
+      } else {
+        // incorrect combined guess
+        incorrectCount = Math.min(maxIndicators, incorrectCount + 1);
+        markIndicator(incorrectCount - 1);
+        const displayGuess = fullWords.join(' ').toUpperCase();
+        const wordsUpper = fullWords.map(w => w.toUpperCase());
+        const perWordCorrect = fullWords.map((w, i) => w.toLowerCase() === (solutionWords[i] || '').toLowerCase());
+        const existing = incorrectGuesses.find(x => ((x.words ? x.words.join(' ') : (x.text || '')).toUpperCase() === displayGuess));
+        if (existing) {
+          existing.words = wordsUpper;
+          existing.correctness = perWordCorrect;
+        } else if (incorrectGuesses.length < maxIndicators) {
+          incorrectGuesses.push({ words: wordsUpper, correctness: perWordCorrect });
+        }
+        renderWrongGuesses();
+        lastGuessWasCorrect = false;
+        currentGuesses = ['', '', ''];
+        activeWord = 0;
+
+        // focus first input to start next guess
+        const firstInput = el('guess-input-0');
+        if (firstInput) {
+          firstInput.focus();
+          try { firstInput.setSelectionRange(firstInput.value.length, firstInput.value.length); } catch (e) {}
+        }
+
+        if (incorrectCount >= maxIndicators) {
+          isGameOver = true;
+        }
+        renderGrid();
       }
     } else if (key === 'DELETE') {
-      // do not allow removing the locked first letter; only remove typed suffix
-      currentGuess = currentGuess.slice(0, -1);
+      // remove last char from current active word (don't remove locked first letter)
+      const suffix = currentGuesses[activeWord] || '';
+      currentGuesses[activeWord] = suffix.slice(0, -1);
     } else {
-      // only allow typing into the editable suffix (positions 1..maxSuffixLen)
-      if (currentGuess.length < maxSuffixLen) {
-        currentGuess += key;
+      // add letter to active word suffix up to configured max for that word
+      if ((currentGuesses[activeWord] || '').length < (maxSuffixLens[activeWord] || 9)) {
+        currentGuesses[activeWord] = ((currentGuesses[activeWord] || '') + key).slice(0, 9);
       }
     }
 
@@ -156,64 +262,71 @@
       });
     });
 
-    // wire the text input for physical typing
-    const input = el('guess-input');
-    if (input) {
+    // wire the text inputs for physical typing (one per word)
+    for (let i = 0; i < 3; i++) {
+      const input = el(`guess-input-${i}`);
+      if (!input) continue;
+
       // keep input prefixed with the locked first letter; users type the remaining suffix letters
-      input.addEventListener('input', (e) => {
-        let v = String(e.target.value || '');
-        // remove non-letters
-        v = v.replace(/[^a-zA-Z]/g, '');
-        // if the user removed or changed the first char, re-insert lockedFirstLetter at start
-        if (!lockedFirstLetter) lockedFirstLetter = '';
-        if (v.length === 0) {
-          currentGuess = '';
-          e.target.value = (lockedFirstLetter || '').toUpperCase();
-          return;
-        }
-
-        // Ensure first char equals lockedFirstLetter
-        const first = v.charAt(0).toLowerCase();
-        if (first !== (lockedFirstLetter || '').toLowerCase()) {
-          v = (lockedFirstLetter || '') + v; // re-insert locked first letter
-        }
-
-        // trim to locked + suffix letters
-        const suffix = v.slice(1, 1 + maxSuffixLen);
-        currentGuess = suffix.toLowerCase();
-
-        // set displayed value to locked + suffix uppercase
-        e.target.value = ((lockedFirstLetter || '') + currentGuess).toUpperCase();
-      });
-
-      // handle Enter and Backspace via keyboard
-      input.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') {
-          e.preventDefault();
-          handleKeyClick('ENTER');
-        } else if (e.key === 'Backspace') {
-          // prevent deleting the locked first character
-          const selStart = input.selectionStart || 0;
-          if (selStart <= 1) {
-            e.preventDefault();
+      ((index) => {
+        input.addEventListener('input', (e) => {
+          let v = String(e.target.value || '');
+          // remove non-letters
+          v = v.replace(/[^a-zA-Z]/g, '');
+          // if the user removed or changed the first char, re-insert lockedFirstLetter at start
+          if (!lockedFirstLetters[index]) lockedFirstLetters[index] = '';
+          if (v.length === 0) {
+            currentGuesses[index] = '';
+            e.target.value = (lockedFirstLetters[index] || '').toUpperCase();
             return;
           }
-          // otherwise allow backspace and sync currentGuess on next tick
-          setTimeout(() => {
-            const v = input.value.replace(/[^a-zA-Z]/g, '');
-            const suffix = v.slice(1, 1 + maxSuffixLen);
-            currentGuess = suffix.toLowerCase();
-            renderGrid();
-          }, 0);
-        }
-      });
 
-      // ensure clicking focuses after the locked char
-      input.addEventListener('focus', () => {
-        setTimeout(() => {
-          try { input.setSelectionRange(input.value.length, input.value.length); } catch (e) {}
-        }, 0);
-      });
+          // Ensure first char equals lockedFirstLetter for this word
+          const first = v.charAt(0).toLowerCase();
+          if (first !== (lockedFirstLetters[index] || '').toLowerCase()) {
+            v = (lockedFirstLetters[index] || '') + v; // re-insert locked first letter
+          }
+
+          // trim to locked + suffix letters
+          const suffix = v.slice(1, 1 + (maxSuffixLens[index] || 9));
+          currentGuesses[index] = suffix.toLowerCase();
+
+          // set displayed value to locked + suffix uppercase
+          e.target.value = ((lockedFirstLetters[index] || '') + currentGuesses[index]).toUpperCase();
+        });
+
+        // handle Enter and Backspace via keyboard
+        input.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            // set activeWord to this input before handling
+            activeWord = index;
+            handleKeyClick('ENTER');
+          } else if (e.key === 'Backspace') {
+            // prevent deleting the locked first character
+            const selStart = input.selectionStart || 0;
+            if (selStart <= 1) {
+              e.preventDefault();
+              return;
+            }
+            // otherwise allow backspace and sync currentGuess on next tick
+            setTimeout(() => {
+              const v = input.value.replace(/[^a-zA-Z]/g, '');
+              const suffix = v.slice(1, 1 + (maxSuffixLens[index] || 9));
+              currentGuesses[index] = suffix.toLowerCase();
+              renderGrid();
+            }, 0);
+          }
+        });
+
+        // ensure clicking focuses after the locked char
+        input.addEventListener('focus', () => {
+          activeWord = index;
+          setTimeout(() => {
+            try { input.setSelectionRange(input.value.length, input.value.length); } catch (e) {}
+          }, 0);
+        });
+      })(i);
     }
   }
 
@@ -230,11 +343,17 @@
       }
     }
 
+    // reset wrong guesses list and current guesses
+    incorrectGuesses.length = 0;
+    renderWrongGuesses();
+    currentGuesses = ['', '', ''];
+    activeWord = 0;
+
     renderGrid();
     renderKeyboard();
 
-    // set focus to input for quick typing
-    const input = el('guess-input');
+    // set focus to first input for quick typing
+    const input = el('guess-input-0');
     if (input) input.focus();
   });
 

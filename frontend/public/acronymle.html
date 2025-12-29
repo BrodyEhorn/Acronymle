@@ -7,28 +7,44 @@
   <link rel="stylesheet" href="/acronymle.css">
 </head>
 <body>
-  <div class="container">
-    <h1>Acronymle</h1>
+  <div class="game-wrapper">
+    <div class="container">
+      <h1>Acronymle</h1>
 
-    <!-- Guess indicators: one box per allowed incorrect guess -->
-    <div id="guess-indicators" class="indicators" aria-hidden="true">
-      <div class="indicator" data-index="0"></div>
-      <div class="indicator" data-index="1"></div>
-      <div class="indicator" data-index="2"></div>
-      <div class="indicator" data-index="3"></div>
-      <div class="indicator" data-index="4"></div>
+      <!-- Guess indicators: one box per allowed incorrect guess -->
+      <div id="guess-indicators" class="indicators" aria-hidden="true">
+        <div class="indicator" data-index="0"></div>
+        <div class="indicator" data-index="1"></div>
+        <div class="indicator" data-index="2"></div>
+        <div class="indicator" data-index="3"></div>
+        <div class="indicator" data-index="4"></div>
+      </div>
+
+<!-- Three input rows: each word in the acronym -->
+    <div id="input-rows">
+      <div id="input-area-0" class="input-area input-row">
+        <input id="guess-input-0" class="guess-input" type="text" maxlength="10" autocomplete="off" inputmode="latin" />
+      </div>
+      <div id="input-area-1" class="input-area input-row">
+        <input id="guess-input-1" class="guess-input" type="text" maxlength="10" autocomplete="off" inputmode="latin" />
+      </div>
+      <div id="input-area-2" class="input-area input-row">
+        <input id="guess-input-2" class="guess-input" type="text" maxlength="10" autocomplete="off" inputmode="latin" />
+      </div>
+      </div>
+
+      <div class="keyboard">
+        <div class="keyboard-row" id="row1"></div>
+        <div class="keyboard-row" id="row2"></div>
+        <div class="keyboard-row" id="row3"></div>
+      </div>
     </div>
 
-    <!-- Single input line: first letter is autofilled into the input; users type the remaining suffix letters -->
-    <div id="input-area" class="input-area">
-      <input id="guess-input" class="guess-input" type="text" maxlength="9" autocomplete="off" inputmode="latin" />
-    </div>
-
-    <div class="keyboard">
-      <div class="keyboard-row" id="row1"></div>
-      <div class="keyboard-row" id="row2"></div>
-      <div class="keyboard-row" id="row3"></div>
-    </div>
+    <!-- Right-side panel for guesses -->
+    <aside id="wrong-list" class="wrong-list" aria-live="polite">
+      <h2>Guesses</h2>
+      <ul id="wrong-guesses" class="wrong-guesses"></ul>
+    </aside>
   </div>
 
   <!-- Game logic is loaded from an external file for clarity -->

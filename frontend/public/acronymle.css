@@ -87,18 +87,133 @@ body {
   padding: 20px;
 }
 
+/* Layout: main wrapper with game area on the left and a right-side panel for wrong guesses */
+.game-wrapper {
+  display: flex;
+  gap: 24px;
+  width: 100%;
+  max-width: 900px;
+  align-items: flex-start;
+}
+
+/* Keep game area column layout but allow more width */
 .container {
   display: flex;
   flex-direction: column;
   align-items: center;
   width: 100%;
-  max-width: 500px;
+  max-width: 640px;
+  margin-top: 4.5rem; /* space below the fixed header */
+}
+
+/* Right-side panel */
+.wrong-list {
+  width: 420px; /* fixed wider width so panel doesn't resize when words change */
+  min-width: 420px;
+  flex-shrink: 0;
+  background: #fff;
+  border-radius: 8px;
+  padding: 12px;
+  box-shadow: 0 2px 8px rgba(15,23,42,0.06);
+  border: 1px solid #e5e7eb;
+  color: #111827;
+}
+
+.wrong-list h2 {
+  font-size: 1rem;
+  margin-bottom: 8px;
+  color: #111827; /* black heading */
+  text-align: center;
+}
+
+.wrong-guesses {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 0; /* remove default list padding */
+  margin: 0;
+}
+
+.wrong-guesses li {
+  padding: 6px;
+  border-radius: 6px;
+  background: transparent;
+  color: #111827;
+  font-weight: 600;
+  border: none;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: nowrap; /* keep words on a single line */
+  overflow-x: auto; /* allow horizontal scrolling if needed */
+  -webkit-overflow-scrolling: touch;
+  white-space: nowrap; /* prevent internal wrapping */
+}
+
+.guess-word {
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid #fecaca;
+  background: #fff5f5;
+  color: #991b1b;
+  font-weight: 600;
+  min-width: 48px;
+  max-width: 260px; /* ensure words don't overflow the panel */
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis; /* truncate long words cleanly */
+}
+
+.guess-word.correct {
+  background: #d1fae5;
+  color: #065f46;
+  border-color: #86efac;
+  font-weight: 700;
+}
+
+.guess-word.wrong {
+  background: #fff5f5;
+  color: #991b1b;
+  border-color: #fecaca;
+}
+
+/* Green style for correct guess items in the guesses panel */
+.wrong-guesses li.correct {
+  background: #d1fae5;
+  color: #065f46;
+  border-color: #86efac;
+  font-weight: 700;
+}
+
+@media (max-width: 720px) {
+  .game-wrapper {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .wrong-list {
+    width: 100%;
+    order: 2;
+  }
 }
 
 h1 {
-  font-size: 2.5rem;
-  margin-bottom: 2rem;
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 2rem;
+  margin: 0;
   color: #1f2937;
+  text-align: center;
+  z-index: 10;
+}
+
+/* Slightly reduce title size on small screens */
+@media (max-width: 420px) {
+  h1 { font-size: 1.5rem; top: 14px; }
 }
 
 .grid {
@@ -120,6 +235,16 @@ h1 {
   align-items: center;
   gap: 8px;
   margin-bottom: 18px;
+}
+
+/* Multiple stacked input rows for multi-word guesses */
+.input-row {
+  width: 100%;
+  margin-bottom: 8px;
+}
+
+.input-row.active .guess-input {
+  border-bottom-color: #374151; /* slightly darker when active */
 }
 
 .guess-input {
