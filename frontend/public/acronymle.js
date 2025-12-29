@@ -27,14 +27,14 @@
   // locked first letters per word (auto-filled from solutionWords)
   let lockedFirstLetters = solutionWords.map(w => (w && w[0]) || '');
   // number of editable characters (word length - 1) per word (allow up to 9)
-  let maxSuffixLens = solutionWords.map(w => Math.max(0, (w && w.length) ? Math.min(9, w.length - 1) : 9));
+  let maxSuffixLens = [9, 9, 9]; // Always allow 9 suffix chars (plus 1 locked letter = 10 total)
 
   // Load the solution locally. API calls are disabled for now (TODO: re-enable later).
   function loadSolution() {
     // NOTE: Backend integration for fetching the solution is intentionally
     // disabled. The app uses the local `solutionWords` variable for checks.
     lockedFirstLetters = solutionWords.map(w => (w && w[0]) || '');
-    maxSuffixLens = solutionWords.map(w => Math.max(0, (w && w.length) ? Math.min(9, w.length - 1) : 9));
+    maxSuffixLens = [9, 9, 9];
     // set input max length to 10 for all word inputs and reset current guesses
     for (let i = 0; i < 3; i++) {
       const input = el(`guess-input-${i}`);
@@ -53,7 +53,10 @@
     const list = document.getElementById('wrong-guesses');
     if (!list) return;
     list.innerHTML = '';
-    incorrectGuesses.forEach((g) => {
+    for (let i = 0; i < incorrectGuesses.length; i++) {
+      let g = incorrectGuesses[i];
+      let li = document.createElement('li');
+      li.className = 'guess-item';
       // normalize to { words: [...], correctness: [...] }
       let words = [];
       let correctness = [];
@@ -67,11 +70,8 @@
         words = g.text.split(' ');
         correctness = (g.correct === true) ? words.map(() => true) : words.map(() => false);
       } else {
-        return;
+        continue;
       }
-
-      const li = document.createElement('li');
-      li.className = 'guess-item';
       words.forEach((w, i) => {
         const span = document.createElement('span');
         span.className = 'guess-word';
@@ -80,9 +80,8 @@
         span.textContent = w;
         li.appendChild(span);
       });
-
       list.appendChild(li);
-    });
+    }
   }
 
   function markIndicator(i) {
@@ -109,7 +108,7 @@
     return document.getElementById(id);
   }
 
-  // Render input line: include locked first letter inside the input value; if solved, show green state and disable input
+  // Render input line: include locked first letter inside the input value; if solved, show solution word and disable input
   function renderGrid() {
     for (let i = 0; i < 3; i++) {
       const input = el(`guess-input-${i}`);
@@ -138,6 +137,16 @@
         }
       }
     }
+    renderAcronym();
+  }
+
+  // Render the acronym above the input boxes (e.g., OTW)
+  function renderAcronym() {
+    const acronymDiv = el('acronym-display');
+    if (!acronymDiv) return;
+    // Use the first letter of each solution word, uppercased, no separator
+    const acronym = solutionWords.map(w => (w && w[0] ? w[0].toUpperCase() : '?')).join('');
+    acronymDiv.textContent = acronym;
   }
 
   // Handle clicks from the on-screen keyboard (or programmatic calls)
@@ -351,6 +360,7 @@
 
     renderGrid();
     renderKeyboard();
+    renderAcronym();
 
     // set focus to first input for quick typing
     const input = el('guess-input-0');

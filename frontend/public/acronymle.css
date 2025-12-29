@@ -1,3 +1,16 @@
+.acronym-display {
+  font-family: 'Fredoka One', 'Baloo 2', 'Luckiest Guy', Arial, sans-serif;
+  font-size: 3.2rem;
+  font-weight: 700;
+  letter-spacing: 0.35em;
+  color: #374151;
+  text-align: center;
+  margin-bottom: 14px;
+  margin-top: 12px;
+  user-select: none;
+  background: none;
+  display: block;
+}
 /* acronymle.css — styles for Acronymle standalone page */
 /* Added .box.correct so correct guesses are highlighted in green */
 
@@ -94,6 +107,7 @@ body {
   width: 100%;
   max-width: 900px;
   align-items: flex-start;
+  min-height: unset;
 }
 
 /* Keep game area column layout but allow more width */
@@ -104,6 +118,8 @@ body {
   width: 100%;
   max-width: 640px;
   margin-top: 4.5rem; /* space below the fixed header */
+  flex: 1 1 0;
+  height: 100%;
 }
 
 /* Right-side panel */
@@ -117,6 +133,12 @@ body {
   box-shadow: 0 2px 8px rgba(15,23,42,0.06);
   border: 1px solid #e5e7eb;
   color: #111827;
+  margin-top: 104px; /* lowered even more again */
+  margin-bottom: 80px; /* lowered even more again */
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  height: auto;
 }
 
 .wrong-list h2 {
@@ -133,6 +155,17 @@ body {
   gap: 8px;
   padding: 0; /* remove default list padding */
   margin: 0;
+  min-height: 400px;
+  justify-content: flex-start;
+}
+/* Placeholder style for empty guess slots */
+.guess-word.placeholder {
+  opacity: 0.7;
+  background: #f3f4f6;
+  color: #9ca3af;
+  border: 1px dashed #d1d5db;
+  min-width: 48px;
+  display: inline-block;
 }
 
 .wrong-guesses li {
