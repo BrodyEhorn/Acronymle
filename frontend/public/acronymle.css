@@ -142,7 +142,7 @@ body {
 }
 
 .wrong-list h2 {
-  font-size: 1rem;
+  font-size: 2rem;
   margin-bottom: 8px;
   color: #111827; /* black heading */
   text-align: center;
@@ -192,6 +192,7 @@ body {
   background: #fff5f5;
   color: #991b1b;
   font-weight: 600;
+  font-size: 1rem;
   min-width: 48px;
   max-width: 260px; /* ensure words don't overflow the panel */
   text-align: center;
