@@ -1,3 +1,31 @@
+  // Allow typing into guess inputs even when not focused
+  document.addEventListener('keydown', (e) => {
+    // Ignore if a modal, alert, or other input is focused
+    const tag = (document.activeElement && document.activeElement.tagName) || '';
+    if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || tag === 'BUTTON') return;
+    // Only handle letter keys, Enter, and Backspace
+    const isLetter = /^[a-zA-Z]$/.test(e.key);
+    if (!isLetter && e.key !== 'Enter' && e.key !== 'Backspace') return;
+    // Route the event to the currently active input
+    const input = document.getElementById(`guess-input-${activeWord}`);
+    if (input) {
+      input.focus();
+      // For letters, append to input
+      if (isLetter) {
+        // Simulate typing by appending the letter
+        const val = input.value + e.key.toUpperCase();
+        input.value = val;
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+      } else if (e.key === 'Backspace') {
+        // Simulate backspace
+        input.value = input.value.slice(0, -1);
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+      } else if (e.key === 'Enter') {
+        input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+      }
+      e.preventDefault();
+    }
+  });
 /* acronymle.js — Game logic for Acronymle
    Moved out of the HTML file for clarity and maintainability.
    This file initializes the grid and keyboard and handles user input.
