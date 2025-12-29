@@ -101,12 +101,34 @@
         continue;
       }
       words.forEach((w, i) => {
+        const wrapper = document.createElement('div');
+        wrapper.style.display = 'flex';
+        wrapper.style.flexDirection = 'column';
+        wrapper.style.alignItems = 'center';
+
         const span = document.createElement('span');
         span.className = 'guess-word';
         if (correctness[i]) span.classList.add('correct');
         else span.classList.add('wrong');
         span.textContent = w;
-        li.appendChild(span);
+        wrapper.appendChild(span);
+
+        // Add triangle arrow if incorrect length
+        if (!correctness[i]) {
+          const correctWord = (solutionWords[i] || '');
+          if (w.length !== correctWord.length) {
+            const detail = document.createElement('span');
+            detail.className = 'guess-length-detail';
+            detail.style.fontSize = '1.2em';
+            detail.style.marginLeft = '6px';
+            detail.style.verticalAlign = 'middle';
+            detail.style.color = '#991b1b';
+            // ⇧ for too short, ⇩ for too long
+            detail.textContent = w.length < correctWord.length ? '⇧' : '⇩';
+            span.appendChild(detail);
+          }
+        }
+        li.appendChild(wrapper);
       });
       list.appendChild(li);
     }
