@@ -248,7 +248,15 @@
           incorrectGuesses.push({ words: wordsUpper, correctness: perWordCorrect });
         }
         renderWrongGuesses();
-        currentGuesses = ['', '', ''];
+        // Autofill correct words for next guess
+        for (let i = 0; i < 3; i++) {
+          if (wordsUpper[i].toLowerCase() === (solutionWords[i] || '').toLowerCase()) {
+            // Remove locked first letter and store only the suffix
+            currentGuesses[i] = wordsUpper[i].slice(1).toLowerCase();
+          } else {
+            currentGuesses[i] = '';
+          }
+        }
         activeWord = 0;
         renderGrid();
         // focus first input after submission
@@ -257,7 +265,7 @@
           firstInput.focus();
           try { firstInput.setSelectionRange(firstInput.value.length, firstInput.value.length); } catch (e) {}
         }
-        isGameOver = true; 
+        isGameOver = true;
       } else {
         // incorrect combined guess
         incorrectCount = Math.min(maxIndicators, incorrectCount + 1);
@@ -274,7 +282,15 @@
         }
         renderWrongGuesses();
         lastGuessWasCorrect = false;
-        currentGuesses = ['', '', ''];
+        // Autofill only the correct words for the next guess
+        for (let i = 0; i < 3; i++) {
+          if (perWordCorrect[i]) {
+            // Remove locked first letter and store only the suffix
+            currentGuesses[i] = wordsUpper[i].slice(1).toLowerCase();
+          } else {
+            currentGuesses[i] = '';
+          }
+        }
         activeWord = 0;
 
         // focus first input to start next guess
