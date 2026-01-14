@@ -108,8 +108,16 @@
 
         const span = document.createElement('span');
         span.className = 'guess-word';
-        if (correctness[i]) span.classList.add('correct');
-        else span.classList.add('wrong');
+        if (correctness[i]) {
+          span.classList.add('correct');
+        } else {
+          const correctWord = (solutionWords[i] || '');
+          if (w.length === correctWord.length) {
+            span.classList.add('close');
+          } else {
+            span.classList.add('wrong');
+          }
+        }
         span.textContent = w;
         wrapper.appendChild(span);
 

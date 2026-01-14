@@ -11,6 +11,7 @@
   background: none;
   display: block;
 }
+
 /* acronymle.css — styles for Acronymle standalone page */
 /* Added .box.correct so correct guesses are highlighted in green */
 
@@ -51,7 +52,8 @@
   font-weight: 700;
   color: #6b7280;
   border-radius: 6px;
-  position: relative; /* allow check overlay */
+  position: relative;
+  /* allow check overlay */
 }
 
 /* small green check overlay added when the answer is correct; keeps the red X visible */
@@ -68,18 +70,20 @@
   color: #fff;
   border-radius: 50%;
   font-size: 12px;
-  box-shadow: 0 1px 0 rgba(0,0,0,0.12);
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.12);
 }
 
 .indicator.wrong {
-  background-color: #ef4444; /* red */
+  background-color: #ef4444;
+  /* red */
   color: #fff;
   border-color: #ef4444;
 }
 
 /* Green state for indicators when answer is correct */
 .indicator.correct {
-  background-color: #6aaa64; /* green */
+  background-color: #6aaa64;
+  /* green */
   color: #fff;
   border-color: #6aaa64;
 }
@@ -117,24 +121,28 @@ body {
   align-items: center;
   width: 100%;
   max-width: 640px;
-  margin-top: 4.5rem; /* space below the fixed header */
+  margin-top: 4.5rem;
+  /* space below the fixed header */
   flex: 1 1 0;
   height: 100%;
 }
 
 /* Right-side panel */
 .wrong-list {
-  width: 420px; /* fixed wider width so panel doesn't resize when words change */
+  width: 420px;
+  /* fixed wider width so panel doesn't resize when words change */
   min-width: 420px;
   flex-shrink: 0;
   background: #fff;
   border-radius: 8px;
   padding: 12px;
-  box-shadow: 0 2px 8px rgba(15,23,42,0.06);
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
   border: 1px solid #e5e7eb;
   color: #111827;
-  margin-top: 104px; /* lowered even more again */
-  margin-bottom: 80px; /* lowered even more again */
+  margin-top: 104px;
+  /* lowered even more again */
+  margin-bottom: 80px;
+  /* lowered even more again */
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
@@ -144,7 +152,8 @@ body {
 .wrong-list h2 {
   font-size: 2rem;
   margin-bottom: 8px;
-  color: #111827; /* black heading */
+  color: #111827;
+  /* black heading */
   text-align: center;
 }
 
@@ -153,11 +162,13 @@ body {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  padding: 0; /* remove default list padding */
+  padding: 0;
+  /* remove default list padding */
   margin: 0;
   min-height: 400px;
   justify-content: flex-start;
 }
+
 /* Placeholder style for empty guess slots */
 .guess-word.placeholder {
   opacity: 0.7;
@@ -179,10 +190,13 @@ body {
   gap: 8px;
   align-items: center;
   justify-content: center;
-  flex-wrap: nowrap; /* keep words on a single line */
-  overflow-x: auto; /* allow horizontal scrolling if needed */
+  flex-wrap: nowrap;
+  /* keep words on a single line */
+  overflow-x: auto;
+  /* allow horizontal scrolling if needed */
   -webkit-overflow-scrolling: touch;
-  white-space: nowrap; /* prevent internal wrapping */
+  white-space: nowrap;
+  /* prevent internal wrapping */
 }
 
 .guess-word {
@@ -194,11 +208,13 @@ body {
   font-weight: 600;
   font-size: 1rem;
   min-width: 48px;
-  max-width: 260px; /* ensure words don't overflow the panel */
+  max-width: 260px;
+  /* ensure words don't overflow the panel */
   text-align: center;
   white-space: nowrap;
   overflow: hidden;
-  text-overflow: ellipsis; /* truncate long words cleanly */
+  text-overflow: ellipsis;
+  /* truncate long words cleanly */
 }
 
 .guess-word.correct {
@@ -214,6 +230,15 @@ body {
   border-color: #fecaca;
 }
 
+.guess-word.close {
+  background: #fef9c3;
+  /* lighter yellow (yellow-100) */
+  color: #a16207;
+  /* softer brown-yellow (yellow-700) */
+  border-color: #fde047;
+  /* yellow-300 */
+}
+
 /* Green style for correct guess items in the guesses panel */
 .wrong-guesses li.correct {
   background: #d1fae5;
@@ -227,6 +252,7 @@ body {
     flex-direction: column;
     align-items: stretch;
   }
+
   .wrong-list {
     width: 100%;
     order: 2;
@@ -247,7 +273,10 @@ h1 {
 
 /* Slightly reduce title size on small screens */
 @media (max-width: 420px) {
-  h1 { font-size: 1.5rem; top: 14px; }
+  h1 {
+    font-size: 1.5rem;
+    top: 14px;
+  }
 }
 
 .grid {
@@ -278,7 +307,8 @@ h1 {
 }
 
 .input-row.active .guess-input {
-  border-bottom-color: #374151; /* slightly darker when active */
+  border-bottom-color: #374151;
+  /* slightly darker when active */
 }
 
 .guess-input {
@@ -299,6 +329,7 @@ h1 {
 .guess-input::placeholder {
   text-transform: uppercase;
 }
+
 /* Input when correct */
 .input-area.correct .locked-letter,
 .input-area.correct .guess-input {
