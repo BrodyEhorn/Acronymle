@@ -1,31 +1,31 @@
-  // Allow typing into guess inputs even when not focused
-  document.addEventListener('keydown', (e) => {
-    // Ignore if a modal, alert, or other input is focused
-    const tag = (document.activeElement && document.activeElement.tagName) || '';
-    if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || tag === 'BUTTON') return;
-    // Only handle letter keys, Enter, and Backspace
-    const isLetter = /^[a-zA-Z]$/.test(e.key);
-    if (!isLetter && e.key !== 'Enter' && e.key !== 'Backspace') return;
-    // Route the event to the currently active input
-    const input = document.getElementById(`guess-input-${activeWord}`);
-    if (input) {
-      input.focus();
-      // For letters, append to input
-      if (isLetter) {
-        // Simulate typing by appending the letter
-        const val = input.value + e.key.toUpperCase();
-        input.value = val;
-        input.dispatchEvent(new Event('input', { bubbles: true }));
-      } else if (e.key === 'Backspace') {
-        // Simulate backspace
-        input.value = input.value.slice(0, -1);
-        input.dispatchEvent(new Event('input', { bubbles: true }));
-      } else if (e.key === 'Enter') {
-        input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
-      }
-      e.preventDefault();
+// Allow typing into guess inputs even when not focused
+document.addEventListener('keydown', (e) => {
+  // Ignore if a modal, alert, or other input is focused
+  const tag = (document.activeElement && document.activeElement.tagName) || '';
+  if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || tag === 'BUTTON') return;
+  // Only handle letter keys, Enter, and Backspace
+  const isLetter = /^[a-zA-Z]$/.test(e.key);
+  if (!isLetter && e.key !== 'Enter' && e.key !== 'Backspace') return;
+  // Route the event to the currently active input
+  const input = document.getElementById(`guess-input-${activeWord}`);
+  if (input) {
+    input.focus();
+    // For letters, append to input
+    if (isLetter) {
+      // Simulate typing by appending the letter
+      const val = input.value + e.key.toUpperCase();
+      input.value = val;
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+    } else if (e.key === 'Backspace') {
+      // Simulate backspace
+      input.value = input.value.slice(0, -1);
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+    } else if (e.key === 'Enter') {
+      input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
     }
-  });
+    e.preventDefault();
+  }
+});
 /* acronymle.js — Game logic for Acronymle
    Moved out of the HTML file for clarity and maintainability.
    This file initializes the grid and keyboard and handles user input.
@@ -49,6 +49,9 @@
   let lastGuessWasCorrect = false; // true when the last confirmed combined guess was correct
   let lastCorrectGuess = ''; // stores the correct combined guess when solved
 
+  // Locked state for individual words
+  let wordSolved = [false, false, false];
+
   // Default solution words (three words)
   const solutionWords = ['on', 'the', 'way'];
   const combinedSolution = solutionWords.join(' ');
@@ -69,6 +72,7 @@
       if (input) input.maxLength = 10;
       currentGuesses[i] = '';
     }
+    wordSolved = [false, false, false];
     activeWord = 0;
   }
 
@@ -168,21 +172,24 @@
 
   // Render input line: include locked first letter inside the input value; if solved, show solution word and disable input
   function renderGrid() {
+    let firstUnsolved = -1;
     for (let i = 0; i < 3; i++) {
       const input = el(`guess-input-${i}`);
       const area = el(`input-area-${i}`);
       if (!input || !area) continue;
 
-      if (lastGuessWasCorrect && lastCorrectGuess) {
-        // on solved state, show solution word (do not change input background color)
+      if (wordSolved[i]) {
+        // If the specific word is solved, lock it to correct
         input.value = (solutionWords[i] || '').toUpperCase();
         input.disabled = true;
-        // ensure input area is not styled as 'correct'
-        area.classList.remove('correct');
+        area.classList.remove('active');
+        // Do not add .correct class here, so it doesn't turn green
       } else {
+        // Track the first available slot to focus if needed
+        if (firstUnsolved === -1) firstUnsolved = i;
+
         input.value = ((lockedFirstLetters[i] || '').toUpperCase()) + (currentGuesses[i] || '').toUpperCase();
         input.disabled = false;
-        // ensure the 'correct' class isn't present for active/inactive states
         area.classList.remove('correct');
         if (i === activeWord) {
           area.classList.add('active');
@@ -191,7 +198,7 @@
         }
         // keep the caret at end if active
         if (i === activeWord) {
-          try { input.setSelectionRange(input.value.length, input.value.length); } catch (e) {}
+          try { input.setSelectionRange(input.value.length, input.value.length); } catch (e) { }
         }
       }
     }
@@ -207,47 +214,88 @@
     acronymDiv.textContent = acronym;
   }
 
+  // Helper to find the next editable word index
+  function getNextEditableWord(current) {
+    for (let i = current + 1; i < 3; i++) {
+      if (!wordSolved[i]) return i;
+    }
+    return current; // stay if none after
+  }
+
+  // Helper to find previous editable word index
+  function getPrevEditableWord(current) {
+    for (let i = current - 1; i >= 0; i--) {
+      if (!wordSolved[i]) return i;
+    }
+    return current; // stay if none before
+  }
+
   // Handle clicks from the on-screen keyboard (or programmatic calls)
-  // - ENTER finalizes a guess with at least one character (including locked first letter)
-  // - DELETE removes the last letter
-  // - Letters append up to the configured suffix length
   async function handleKeyClick(key) {
     if (isGameOver) return;
 
+    // Safety check: if active word is somehow solved, move to one that isn't
+    if (wordSolved[activeWord]) {
+      const next = getNextEditableWord(activeWord);
+      if (wordSolved[next]) {
+        // scan from 0 if we are stuck
+        for (let k = 0; k < 3; k++) {
+          if (!wordSolved[k]) { activeWord = k; break; }
+        }
+      } else {
+        activeWord = next;
+      }
+    }
+
     if (key === 'ENTER') {
-      // If not the last word, move focus to next word
-      if (activeWord < 2) {
-        activeWord = Math.min(2, activeWord + 1);
+      // If there are more editable words after this, move focus to the next one
+      const nextIdx = getNextEditableWord(activeWord);
+      if (nextIdx > activeWord) {
+        activeWord = nextIdx;
         renderGrid();
-        // focus the next input so typing continues there
         const nextInput = el(`guess-input-${activeWord}`);
         if (nextInput) nextInput.focus();
         return;
       }
 
-      // activeWord === 2: attempt to submit only if all three words are non-empty
+      // We are at the last editable word. Attempt to submit.
       const fullWords = [];
       for (let i = 0; i < 3; i++) {
-        const word = (lockedFirstLetters[i] || '') + (currentGuesses[i] || '');
-        if (!word || word.length < 1) {
-          // can't submit until all words have at least one character
-          return;
+        if (wordSolved[i]) {
+          fullWords.push(solutionWords[i]);
+        } else {
+          const word = (lockedFirstLetters[i] || '') + (currentGuesses[i] || '');
+          if (!word || word.length < 1) {
+            // can't submit until all words have at least one character
+            return;
+          }
+          fullWords.push(word);
         }
-        fullWords.push(word);
       }
 
       const combined = fullWords.join(' ').toLowerCase();
       const correct = (combined === combinedSolution.toLowerCase());
 
+      // Check individual word correctness to lock them
+      const wordsUpper = fullWords.map(w => w.toUpperCase());
+      const perWordCorrect = fullWords.map((w, i) => w.toLowerCase() === (solutionWords[i] || '').toLowerCase());
+
+      // Update wordSolved status
+      for (let i = 0; i < 3; i++) {
+        if (perWordCorrect[i]) {
+          wordSolved[i] = true;
+          currentGuesses[i] = wordsUpper[i].slice(1).toLowerCase(); // store as suffix just in case
+        }
+      }
+
       if (correct) {
         // correct combined guess
         lastCorrectGuess = fullWords.join(' ');
         lastGuessWasCorrect = true;
-        // mark next indicator as correct and record in guesses panel
         markNextIndicatorCorrect();
+
+        // History
         const displayGuess = lastCorrectGuess.toUpperCase();
-        const wordsUpper = lastCorrectGuess.toUpperCase().split(' ');
-        const perWordCorrect = wordsUpper.map((w, i) => w.toLowerCase() === (solutionWords[i] || '').toLowerCase());
         const existing = incorrectGuesses.find(x => ((x.words ? x.words.join(' ') : (x.text || '')).toUpperCase() === displayGuess));
         if (existing) {
           existing.words = wordsUpper;
@@ -256,31 +304,16 @@
           incorrectGuesses.push({ words: wordsUpper, correctness: perWordCorrect });
         }
         renderWrongGuesses();
-        // Autofill correct words for next guess
-        for (let i = 0; i < 3; i++) {
-          if (wordsUpper[i].toLowerCase() === (solutionWords[i] || '').toLowerCase()) {
-            // Remove locked first letter and store only the suffix
-            currentGuesses[i] = wordsUpper[i].slice(1).toLowerCase();
-          } else {
-            currentGuesses[i] = '';
-          }
-        }
-        activeWord = 0;
+
+        activeWord = 0; // reset (all inputs disabled anyway)
         renderGrid();
-        // focus first input after submission
-        const firstInput = el('guess-input-0');
-        if (firstInput) {
-          firstInput.focus();
-          try { firstInput.setSelectionRange(firstInput.value.length, firstInput.value.length); } catch (e) {}
-        }
         isGameOver = true;
       } else {
         // incorrect combined guess
         incorrectCount = Math.min(maxIndicators, incorrectCount + 1);
         markIndicator(incorrectCount - 1);
+
         const displayGuess = fullWords.join(' ').toUpperCase();
-        const wordsUpper = fullWords.map(w => w.toUpperCase());
-        const perWordCorrect = fullWords.map((w, i) => w.toLowerCase() === (solutionWords[i] || '').toLowerCase());
         const existing = incorrectGuesses.find(x => ((x.words ? x.words.join(' ') : (x.text || '')).toUpperCase() === displayGuess));
         if (existing) {
           existing.words = wordsUpper;
@@ -290,22 +323,24 @@
         }
         renderWrongGuesses();
         lastGuessWasCorrect = false;
-        // Autofill only the correct words for the next guess
+
+        // Clear incorrect guesses (keep locked/solved ones)
         for (let i = 0; i < 3; i++) {
-          if (perWordCorrect[i]) {
-            // Remove locked first letter and store only the suffix
-            currentGuesses[i] = wordsUpper[i].slice(1).toLowerCase();
-          } else {
+          if (!wordSolved[i]) {
             currentGuesses[i] = '';
           }
         }
-        activeWord = 0;
 
-        // focus first input to start next guess
-        const firstInput = el('guess-input-0');
+        // Move focus to first unsolved word
+        for (let k = 0; k < 3; k++) {
+          if (!wordSolved[k]) { activeWord = k; break; }
+        }
+
+        // focus input
+        const firstInput = el(`guess-input-${activeWord}`);
         if (firstInput) {
           firstInput.focus();
-          try { firstInput.setSelectionRange(firstInput.value.length, firstInput.value.length); } catch (e) {}
+          try { firstInput.setSelectionRange(firstInput.value.length, firstInput.value.length); } catch (e) { }
         }
 
         if (incorrectCount >= maxIndicators) {
@@ -314,11 +349,11 @@
         renderGrid();
       }
     } else if (key === 'DELETE') {
-      // remove last char from current active word (don't remove locked first letter)
+      if (wordSolved[activeWord]) return; // can't delete locked words
       const suffix = currentGuesses[activeWord] || '';
       currentGuesses[activeWord] = suffix.slice(0, -1);
     } else {
-      // add letter to active word suffix up to configured max for that word
+      if (wordSolved[activeWord]) return; // can't type in locked words
       if ((currentGuesses[activeWord] || '').length < (maxSuffixLens[activeWord] || 9)) {
         currentGuesses[activeWord] = ((currentGuesses[activeWord] || '') + key).slice(0, 9);
       }
@@ -406,7 +441,7 @@
         input.addEventListener('focus', () => {
           activeWord = index;
           setTimeout(() => {
-            try { input.setSelectionRange(input.value.length, input.value.length); } catch (e) {}
+            try { input.setSelectionRange(input.value.length, input.value.length); } catch (e) { }
           }, 0);
         });
       })(i);
