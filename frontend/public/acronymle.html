@@ -1,58 +1,68 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Acronymle</title>
   <link rel="stylesheet" href="/acronymle.css">
-  <link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Fredoka+One&family=Baloo+2:wght@700&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Fredoka+One&family=Baloo+2:wght@700&display=swap"
+    rel="stylesheet">
 </head>
+
 <body>
   <div class="game-wrapper">
-    <div class="container">
-      <h1>Acronymle</h1>
+    <div class="main-content-row">
+      <div class="container">
+        <h1>Acronymle</h1>
 
 
-      <!-- Acronym display (e.g., O.T.W.) -->
-      <div id="acronym-display" class="acronym-display" aria-label="Acronym"></div>
+        <!-- Acronym display (e.g., O.T.W.) -->
+        <div id="acronym-display" class="acronym-display" aria-label="Acronym"></div>
 
-      <!-- Guess indicators: one box per allowed incorrect guess -->
-      <div id="guess-indicators" class="indicators" aria-hidden="true">
-        <div class="indicator" data-index="0"></div>
-        <div class="indicator" data-index="1"></div>
-        <div class="indicator" data-index="2"></div>
-        <div class="indicator" data-index="3"></div>
-        <div class="indicator" data-index="4"></div>
+        <!-- Guess indicators: one box per allowed incorrect guess -->
+        <div id="guess-indicators" class="indicators" aria-hidden="true">
+          <div class="indicator" data-index="0"></div>
+          <div class="indicator" data-index="1"></div>
+          <div class="indicator" data-index="2"></div>
+          <div class="indicator" data-index="3"></div>
+          <div class="indicator" data-index="4"></div>
+        </div>
+
+        <!-- Three input rows: each word in the acronym -->
+        <div id="input-rows">
+          <div id="input-area-0" class="input-area input-row">
+            <input id="guess-input-0" class="guess-input" type="text" maxlength="10" autocomplete="off"
+              inputmode="latin" />
+          </div>
+          <div id="input-area-1" class="input-area input-row">
+            <input id="guess-input-1" class="guess-input" type="text" maxlength="10" autocomplete="off"
+              inputmode="latin" />
+          </div>
+          <div id="input-area-2" class="input-area input-row">
+            <input id="guess-input-2" class="guess-input" type="text" maxlength="10" autocomplete="off"
+              inputmode="latin" />
+          </div>
+        </div>
       </div>
 
-<!-- Three input rows: each word in the acronym -->
-    <div id="input-rows">
-      <div id="input-area-0" class="input-area input-row">
-        <input id="guess-input-0" class="guess-input" type="text" maxlength="10" autocomplete="off" inputmode="latin" />
-      </div>
-      <div id="input-area-1" class="input-area input-row">
-        <input id="guess-input-1" class="guess-input" type="text" maxlength="10" autocomplete="off" inputmode="latin" />
-      </div>
-      <div id="input-area-2" class="input-area input-row">
-        <input id="guess-input-2" class="guess-input" type="text" maxlength="10" autocomplete="off" inputmode="latin" />
-      </div>
-      </div>
-
-      <div class="keyboard">
-        <div class="keyboard-row" id="row1"></div>
-        <div class="keyboard-row" id="row2"></div>
-        <div class="keyboard-row" id="row3"></div>
-      </div>
+      <!-- Right-side panel for guesses -->
+      <aside id="wrong-list" class="wrong-list" aria-live="polite">
+        <h2>Guesses</h2>
+        <ul id="wrong-guesses" class="wrong-guesses"></ul>
+      </aside>
     </div>
 
-    <!-- Right-side panel for guesses -->
-    <aside id="wrong-list" class="wrong-list" aria-live="polite">
-      <h2>Guesses</h2>
-      <ul id="wrong-guesses" class="wrong-guesses"></ul>
-    </aside>
+    <div class="keyboard">
+      <div class="keyboard-row" id="row1"></div>
+      <div class="keyboard-row" id="row2"></div>
+      <div class="keyboard-row" id="row3"></div>
+    </div>
   </div>
 
   <!-- Game logic is loaded from an external file for clarity -->
   <script src="/acronymle.js" defer></script>
 </body>
+
 </html>
