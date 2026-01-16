@@ -15,8 +15,8 @@ def get_solution():
     try:
         conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
-        # For now, just grab the first one (OTW)
-        cursor.execute('SELECT words FROM acronyms LIMIT 1')
+        # Specifically select OTW as requested
+        cursor.execute("SELECT words FROM acronyms WHERE acronym = 'OTW'")
         row = cursor.fetchone()
         conn.close()
         
