@@ -53,17 +53,33 @@ document.addEventListener('keydown', (e) => {
   let wordSolved = [false, false, false];
 
   // Default solution words (three words)
-  const solutionWords = ['on', 'the', 'way'];
-  const combinedSolution = solutionWords.join(' ');
+  let solutionWords = ['on', 'the', 'way'];
+  let combinedSolution = solutionWords.join(' ');
   // locked first letters per word (auto-filled from solutionWords)
   let lockedFirstLetters = solutionWords.map(w => (w && w[0]) || '');
   // number of editable characters (word length - 1) per word (allow up to 9)
   let maxSuffixLens = [9, 9, 9]; // Always allow 9 suffix chars (plus 1 locked letter = 10 total)
 
   // Load the solution locally. API calls are disabled for now (TODO: re-enable later).
-  function loadSolution() {
-    // NOTE: Backend integration for fetching the solution is intentionally
-    // disabled. The app uses the local `solutionWords` variable for checks.
+  // Load the solution from the backend API
+  async function loadSolution() {
+    try {
+      const response = await fetch('http://localhost:5000/api/solution');
+      if (!response.ok) throw new Error('Network response was not ok');
+      const data = await response.json();
+
+      // Update solutionWords with data from backend
+      // Data expected format: { words: ["word1", "word2", "word3"] }
+      if (data.words && Array.isArray(data.words)) {
+        solutionWords = data.words;
+        combinedSolution = solutionWords.join(' ');
+      }
+    } catch (err) {
+      console.error('Failed to fetch solution:', err);
+      // Fallback or keep default
+    }
+
+    // Recalculate derived state
     lockedFirstLetters = solutionWords.map(w => (w && w[0]) || '');
     maxSuffixLens = [9, 9, 9];
     // set input max length to 10 for all word inputs and reset current guesses
