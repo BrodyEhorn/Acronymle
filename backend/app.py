@@ -15,8 +15,8 @@ def get_solution():
     try:
         conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
-        # Specifically select OTW as requested
-        cursor.execute("SELECT words FROM acronyms WHERE acronym = 'OTW'")
+        # Select a random acronym from the database
+        cursor.execute("SELECT words FROM acronyms ORDER BY RANDOM() LIMIT 1")
         row = cursor.fetchone()
         conn.close()
         
