@@ -99,7 +99,8 @@ body {
   background-color: #f9fafb;
   display: flex;
   justify-content: center;
-  align-items: center;
+  align-items: flex-start;
+  /* changed from center to flex-start */
   min-height: 100vh;
   padding: 20px;
 }
@@ -111,9 +112,10 @@ body {
   flex-direction: column;
   gap: 24px;
   width: 100%;
-  max-width: 900px;
+  max-width: 1000px;
   align-items: center;
-  min-height: unset;
+  min-height: calc(100vh - 80px);
+  /* Use viewport height to push keyboard down */
   margin-top: 60px;
 }
 
@@ -121,7 +123,8 @@ body {
   display: flex;
   gap: 16px;
   width: 100%;
-  align-items: center;
+  align-items: stretch;
+  flex: 1;
 }
 
 /* Keep game area column layout but allow more width */
@@ -139,9 +142,9 @@ body {
 
 /* Right-side panel */
 .wrong-list {
-  width: 420px;
+  width: 500px;
   /* fixed wider width so panel doesn't resize when words change */
-  min-width: 420px;
+  min-width: 500px;
   flex-shrink: 0;
   background: #fff;
   border-radius: 8px;
@@ -177,6 +180,7 @@ body {
   margin: 0;
   min-height: 350px;
   justify-content: flex-start;
+  flex: 1;
 }
 
 /* Placeholder style for empty guess slots */
@@ -200,17 +204,8 @@ body {
   gap: 8px;
   align-items: center;
   justify-content: center;
-  flex-wrap: nowrap;
-  /* keep words on a single line */
-  overflow-x: auto;
-  /* allow horizontal scrolling if needed */
-  -webkit-overflow-scrolling: touch;
-  white-space: nowrap;
-  /* prevent internal wrapping */
-  scrollbar-width: none;
-  /* Firefox */
-  -ms-overflow-style: none;
-  /* IE/Edge */
+  flex-wrap: wrap;
+  /* allow words to wrap if they don't fit */
 }
 
 .wrong-guesses li::-webkit-scrollbar {
@@ -226,13 +221,8 @@ body {
   font-weight: 600;
   font-size: 1rem;
   min-width: 48px;
-  max-width: 260px;
-  /* ensure words don't overflow the panel */
   text-align: center;
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  /* truncate long words cleanly */
 }
 
 .guess-word.correct {
@@ -376,6 +366,9 @@ h1 {
   flex-direction: column;
   gap: 8px;
   width: 100%;
+  margin-top: auto;
+  /* Push to bottom of wrapper */
+  padding-bottom: 8px;
 }
 
 .keyboard-row {
