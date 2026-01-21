@@ -296,6 +296,14 @@ document.addEventListener('keydown', (e) => {
       const wordsUpper = fullWords.map(w => w.toUpperCase());
       const perWordCorrect = fullWords.map((w, i) => w.toLowerCase() === (solutionWords[i] || '').toLowerCase());
 
+      // Prevent duplicate guesses from being submitted
+      const displayGuess = fullWords.join(' ').toUpperCase();
+      const isDuplicate = incorrectGuesses.some(x => ((x.words ? x.words.join(' ') : (x.text || '')).toUpperCase() === displayGuess));
+      if (isDuplicate && !correct) {
+        // Don't allow duplicate incorrect guesses - just return without doing anything
+        return;
+      }
+
       // Update wordSolved status
       for (let i = 0; i < 3; i++) {
         if (perWordCorrect[i]) {
