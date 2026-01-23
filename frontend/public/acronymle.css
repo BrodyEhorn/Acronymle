@@ -309,6 +309,14 @@ h1 {
 }
 
 /* Multiple stacked input rows for multi-word guesses */
+#input-rows {
+  position: relative;
+  /* Anchor for toast notification */
+  width: fit-content;
+  min-width: 320px;
+  margin: 0 auto;
+}
+
 .input-row {
   width: 100%;
   margin-bottom: 8px;
@@ -321,7 +329,7 @@ h1 {
 
 .guess-input {
   width: 100%;
-  min-width: 240px;
+  max-width: 400px;
   height: 56px;
   border: none;
   border-bottom: 2px solid #9ca3af;

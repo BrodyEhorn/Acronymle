@@ -181,6 +181,38 @@ document.addEventListener('keydown', (e) => {
     }
   }
 
+  // Show a temporary toast message
+  function showToast(message, type = '') {
+    let container = el('toast-container');
+    if (!container) {
+      container = document.createElement('div');
+      container.id = 'toast-container';
+      const inputRows = el('input-rows');
+      if (inputRows) {
+        inputRows.appendChild(container);
+      } else {
+        document.body.appendChild(container);
+      }
+    } else {
+      // Clear existing toasts to ensure only one is shown at a time
+      container.innerHTML = '';
+    }
+    const toast = document.createElement('div');
+    toast.className = 'toast';
+    if (type) toast.classList.add(type);
+    toast.textContent = message;
+    container.appendChild(toast);
+
+    // Trigger animation
+    setTimeout(() => toast.classList.add('show'), 10);
+
+    // Remove after 3s
+    setTimeout(() => {
+      toast.classList.remove('show');
+      setTimeout(() => toast.remove(), 300);
+    }, 3000);
+  }
+
   // Helper to safely get an element by id
   function el(id) {
     return document.getElementById(id);
@@ -290,6 +322,19 @@ document.addEventListener('keydown', (e) => {
       }
 
       const combined = fullWords.join(' ').toLowerCase();
+
+      // Duplicate Guess Check
+      const uppercaseGuess = combined.toUpperCase();
+      const isDuplicate = incorrectGuesses.some(g => {
+        const existingText = (g.words ? g.words.join(' ') : (g.text || '')).toUpperCase();
+        return existingText === uppercaseGuess;
+      });
+
+      if (isDuplicate) {
+        showToast('Duplicate Guess!', 'duplicate');
+        return;
+      }
+
       const correct = (combined === combinedSolution.toLowerCase());
 
       // Check individual word correctness to lock them
