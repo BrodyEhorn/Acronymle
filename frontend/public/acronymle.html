@@ -62,6 +62,18 @@
     </div>
   </div>
 
+  <!-- Game Over Modal -->
+  <div id="game-over-modal" class="modal-overlay" style="display: none;">
+    <div class="modal-content">
+      <h2 id="modal-title">You Won!</h2>
+      <div class="solution-box">
+        <span class="solution-label">Solution:</span>
+        <span id="modal-solution" class="solution-text">ON THE WAY</span>
+      </div>
+      <button id="play-again-btn" class="play-again-btn">Play Again</button>
+    </div>
+  </div>
+
   <!-- Game logic is loaded from an external file for clarity -->
   <script src="/acronymle.js" defer></script>
 </body>

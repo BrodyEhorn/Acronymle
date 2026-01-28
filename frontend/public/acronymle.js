@@ -213,6 +213,61 @@ document.addEventListener('keydown', (e) => {
     }, 3000);
   }
 
+  // --- Modal Logic ---
+  function showGameOverModal(win) {
+    const modal = el('game-over-modal');
+    const content = modal.querySelector('.modal-content');
+    const title = el('modal-title');
+    const solutionStr = el('modal-solution');
+
+    if (win) {
+      title.textContent = 'You Won!';
+      content.className = 'modal-content win';
+    } else {
+      title.textContent = 'Game Over';
+      content.className = 'modal-content loss';
+    }
+
+    solutionStr.textContent = combinedSolution.toUpperCase();
+    modal.style.display = 'flex';
+  }
+
+  function hideGameOverModal() {
+    const modal = el('game-over-modal');
+    if (modal) modal.style.display = 'none';
+  }
+
+  // Restart the game state
+  async function restartGame() {
+    isGameOver = false;
+    incorrectCount = 0;
+    incorrectGuesses.length = 0;
+    currentGuesses = ['', '', ''];
+    wordSolved = [false, false, false];
+    activeWord = 0;
+    lastGuessWasCorrect = false;
+
+    // Reset indicators
+    for (let i = 0; i < maxIndicators; i++) {
+      const ind = document.querySelector(`#guess-indicators .indicator[data-index="${i}"]`);
+      if (ind) {
+        ind.classList.remove('wrong', 'correct');
+        ind.textContent = '';
+      }
+    }
+
+    // Reset UI
+    renderWrongGuesses();
+    await loadSolution();
+    renderGrid();
+    renderAcronym();
+    hideGameOverModal();
+
+    // Focus first input
+    const input = el('guess-input-0');
+    if (input) input.focus();
+  }
+
   // Helper to safely get an element by id
   function el(id) {
     return document.getElementById(id);
@@ -369,6 +424,7 @@ document.addEventListener('keydown', (e) => {
         activeWord = 0; // reset (all inputs disabled anyway)
         renderGrid();
         isGameOver = true;
+        showGameOverModal(true);
       } else {
         // incorrect combined guess
         incorrectCount = Math.min(maxIndicators, incorrectCount + 1);
@@ -406,6 +462,7 @@ document.addEventListener('keydown', (e) => {
 
         if (incorrectCount >= maxIndicators) {
           isGameOver = true;
+          showGameOverModal(false);
         }
         renderGrid();
       }
@@ -535,6 +592,12 @@ document.addEventListener('keydown', (e) => {
     // set focus to first input for quick typing
     const input = el('guess-input-0');
     if (input) input.focus();
+
+    // Wire up play again button
+    const playAgainBtn = el('play-again-btn');
+    if (playAgainBtn) {
+      playAgainBtn.addEventListener('click', restartGame);
+    }
   });
 
 })();
