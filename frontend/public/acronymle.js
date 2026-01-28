@@ -51,6 +51,7 @@ document.addEventListener('keydown', (e) => {
 
   // Locked state for individual words
   let wordSolved = [false, false, false];
+  let hintsUsed = 0;
 
   // Default solution words (three words)
   let solutionWords = ['on', 'the', 'way'];
@@ -58,7 +59,7 @@ document.addEventListener('keydown', (e) => {
   // locked first letters per word (auto-filled from solutionWords)
   let lockedFirstLetters = solutionWords.map(w => (w && w[0]) || '');
   // number of editable characters (word length - 1) per word (allow up to 9)
-  let maxSuffixLens = [9, 9, 9]; // Always allow 9 suffix chars (plus 1 locked letter = 10 total)
+  let maxSuffixLens = [11, 11, 11]; // Always allow 11 suffix chars (plus 1 locked letter = 12 total)
 
   // Load the solution locally. API calls are disabled for now (TODO: re-enable later).
   // Load the solution from the backend API
@@ -81,15 +82,17 @@ document.addEventListener('keydown', (e) => {
 
     // Recalculate derived state
     lockedFirstLetters = solutionWords.map(w => (w && w[0]) || '');
-    maxSuffixLens = [9, 9, 9];
-    // set input max length to 10 for all word inputs and reset current guesses
+    maxSuffixLens = [11, 11, 11];
+    // set input max length to 12 for all word inputs and reset current guesses
     for (let i = 0; i < 3; i++) {
       const input = el(`guess-input-${i}`);
-      if (input) input.maxLength = 10;
+      if (input) input.maxLength = 12;
       currentGuesses[i] = '';
     }
     wordSolved = [false, false, false];
+    hintsUsed = 0;
     activeWord = 0;
+    syncHintButton();
   }
 
   // Track incorrect guess indicators and store wrong guesses
@@ -244,6 +247,7 @@ document.addEventListener('keydown', (e) => {
     incorrectGuesses.length = 0;
     currentGuesses = ['', '', ''];
     wordSolved = [false, false, false];
+    hintsUsed = 0;
     activeWord = 0;
     lastGuessWasCorrect = false;
 
@@ -261,12 +265,47 @@ document.addEventListener('keydown', (e) => {
     await loadSolution();
     renderGrid();
     renderAcronym();
+    syncHintButton();
     hideGameOverModal();
 
     // Focus first input
     const input = el('guess-input-0');
     if (input) input.focus();
   }
+
+  function syncHintButton() {
+    const btn = el('hint-btn');
+    if (!btn) return;
+    btn.textContent = 'Hint';
+    const allSolved = wordSolved.every(s => s);
+    if (hintsUsed >= 2 || isGameOver || allSolved) {
+      btn.disabled = true;
+    } else {
+      btn.disabled = false;
+    }
+  }
+
+  function giveHint() {
+    if (hintsUsed >= 2 || isGameOver) return;
+
+    // Find first unsolved word
+    const index = wordSolved.indexOf(false);
+    if (index !== -1) {
+      wordSolved[index] = true;
+      hintsUsed++;
+
+      // Update UI
+      renderGrid();
+      syncHintButton();
+
+      // If that was the last word, end the game
+      if (wordSolved.every(s => s)) {
+        isGameOver = true;
+        showGameOverModal(true);
+      }
+    }
+  }
+
 
   // Helper to safely get an element by id
   function el(id) {
@@ -424,6 +463,7 @@ document.addEventListener('keydown', (e) => {
         activeWord = 0; // reset (all inputs disabled anyway)
         renderGrid();
         isGameOver = true;
+        syncHintButton();
         showGameOverModal(true);
       } else {
         // incorrect combined guess
@@ -462,6 +502,7 @@ document.addEventListener('keydown', (e) => {
 
         if (incorrectCount >= maxIndicators) {
           isGameOver = true;
+          syncHintButton();
           showGameOverModal(false);
         }
         renderGrid();
@@ -472,8 +513,8 @@ document.addEventListener('keydown', (e) => {
       currentGuesses[activeWord] = suffix.slice(0, -1);
     } else {
       if (wordSolved[activeWord]) return; // can't type in locked words
-      if ((currentGuesses[activeWord] || '').length < (maxSuffixLens[activeWord] || 9)) {
-        currentGuesses[activeWord] = ((currentGuesses[activeWord] || '') + key).slice(0, 9);
+      if ((currentGuesses[activeWord] || '').length < (maxSuffixLens[activeWord] || 11)) {
+        currentGuesses[activeWord] = ((currentGuesses[activeWord] || '') + key).slice(0, 11);
       }
     }
 
@@ -524,7 +565,7 @@ document.addEventListener('keydown', (e) => {
           }
 
           // trim to locked + suffix letters
-          const suffix = v.slice(1, 1 + (maxSuffixLens[index] || 9));
+          const suffix = v.slice(1, 1 + (maxSuffixLens[index] || 11));
           currentGuesses[index] = suffix.toLowerCase();
 
           // set displayed value to locked + suffix uppercase
@@ -548,7 +589,7 @@ document.addEventListener('keydown', (e) => {
             // otherwise allow backspace and sync currentGuess on next tick
             setTimeout(() => {
               const v = input.value.replace(/[^a-zA-Z]/g, '');
-              const suffix = v.slice(1, 1 + (maxSuffixLens[index] || 9));
+              const suffix = v.slice(1, 1 + (maxSuffixLens[index] || 11));
               currentGuesses[index] = suffix.toLowerCase();
               renderGrid();
             }, 0);
@@ -597,6 +638,12 @@ document.addEventListener('keydown', (e) => {
     const playAgainBtn = el('play-again-btn');
     if (playAgainBtn) {
       playAgainBtn.addEventListener('click', restartGame);
+    }
+
+    // Wire up hint button
+    const hintBtn = el('hint-btn');
+    if (hintBtn) {
+      hintBtn.addEventListener('click', giveHint);
     }
   });
 
