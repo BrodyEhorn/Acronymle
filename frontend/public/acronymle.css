@@ -357,11 +357,25 @@ h1 {
 }
 
 /* Input when correct */
-.input-area.correct .locked-letter,
+.input-area.correct {
+  background-color: #d1fae5;
+  /* soft light green */
+  border: 1px solid #10b981;
+  /* thinner, darker green border */
+  border-radius: 6px;
+  padding: 0 8px;
+  margin-bottom: 16px;
+  /* Match original margin-bottom of .input-area */
+}
+
 .input-area.correct .guess-input {
-  background-color: #6aaa64;
-  color: #fff;
-  border-color: #6aaa64;
+  background-color: transparent !important;
+  color: #111827 !important;
+  /* black/dark text */
+  border-bottom: none !important;
+  -webkit-text-fill-color: #111827 !important;
+  /* Fix for some browsers on disabled inputs */
+  opacity: 1 !important;
 }
 
 /* When disabled/over */

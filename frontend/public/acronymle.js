@@ -286,7 +286,7 @@ document.addEventListener('keydown', (e) => {
         input.value = (solutionWords[i] || '').toUpperCase();
         input.disabled = true;
         area.classList.remove('active');
-        // Do not add .correct class here, so it doesn't turn green
+        area.classList.add('correct');
       } else {
         // Track the first available slot to focus if needed
         if (firstUnsolved === -1) firstUnsolved = i;
