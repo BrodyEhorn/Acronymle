@@ -21,7 +21,7 @@ def seed_db():
         ("OTW", ["on", "the", "way"], "Slang & Social"),
         ("AAA", ["American", "Automobile", "Association"], "Organizations"),
         ("ABS", ["Anti-lock", "Braking", "System"], "Technology"),
-        ("ACL", ["Access", "Control", "List"], "Technology"),
+        ("ACL", ["Anterior", "Cruciate", "Ligament"], "Science & Medical"),
         ("AFK", ["Away", "From", "Keyboard"], "Slang & Social"),
         ("AGM", ["Annual", "General", "Meeting"], "Business & Finance"),
         ("AHT", ["Average", "Handle", "Time"], "Business & Finance"),
