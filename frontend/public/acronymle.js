@@ -53,8 +53,8 @@ document.addEventListener('keydown', (e) => {
   let wordSolved = [false, false, false];
   let hintsUsed = 0;
 
-  // Default solution words (three words)
   let solutionWords = ['on', 'the', 'way'];
+  let currentCategory = '';
   let combinedSolution = solutionWords.join(' ');
   // locked first letters per word (auto-filled from solutionWords)
   let lockedFirstLetters = solutionWords.map(w => (w && w[0]) || '');
@@ -69,12 +69,12 @@ document.addEventListener('keydown', (e) => {
       if (!response.ok) throw new Error('Network response was not ok');
       const data = await response.json();
 
-      // Update solutionWords with data from backend
-      // Data expected format: { words: ["word1", "word2", "word3"] }
+      // Data expected format: { words: ["word1", "word2", "word3"], category: "CategoryName" }
       if (data.words && Array.isArray(data.words)) {
         solutionWords = data.words;
         combinedSolution = solutionWords.join(' ');
       }
+      currentCategory = data.category || '';
     } catch (err) {
       console.error('Failed to fetch solution:', err);
       // Fallback or keep default
@@ -354,6 +354,12 @@ document.addEventListener('keydown', (e) => {
     // Use the first letter of each solution word, uppercased, no separator
     const acronym = solutionWords.map(w => (w && w[0] ? w[0].toUpperCase() : '?')).join('');
     acronymDiv.textContent = acronym;
+
+    const categoryDiv = el('category-display');
+    if (categoryDiv) {
+      categoryDiv.textContent = currentCategory ? `Category: ${currentCategory}` : '';
+      categoryDiv.style.display = currentCategory ? 'block' : 'none';
+    }
   }
 
   // Helper to find the next editable word index

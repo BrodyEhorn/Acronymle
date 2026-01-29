@@ -16,13 +16,14 @@ def get_solution():
         conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
         # Select a random acronym from the database
-        cursor.execute("SELECT words FROM acronyms ORDER BY RANDOM() LIMIT 1")
+        cursor.execute("SELECT words, category FROM acronyms ORDER BY RANDOM() LIMIT 1")
         row = cursor.fetchone()
         conn.close()
         
         if row:
             words = json.loads(row[0])
-            return jsonify({"words": words})
+            category = row[1]
+            return jsonify({"words": words, "category": category})
         else:
             return jsonify({"error": "No acronyms found"}), 404
     except Exception as e:
