@@ -51,6 +51,7 @@ document.addEventListener('keydown', (e) => {
 
   // Locked state for individual words
   let wordSolved = [false, false, false];
+  let wordRevealedByHint = [false, false, false];
   let hintsUsed = 0;
 
   let solutionWords = ['on', 'the', 'way'];
@@ -90,6 +91,7 @@ document.addEventListener('keydown', (e) => {
       currentGuesses[i] = '';
     }
     wordSolved = [false, false, false];
+    wordRevealedByHint = [false, false, false];
     hintsUsed = 0;
     activeWord = 0;
     syncHintButton();
@@ -247,6 +249,7 @@ document.addEventListener('keydown', (e) => {
     incorrectGuesses.length = 0;
     currentGuesses = ['', '', ''];
     wordSolved = [false, false, false];
+    wordRevealedByHint = [false, false, false];
     hintsUsed = 0;
     activeWord = 0;
     lastGuessWasCorrect = false;
@@ -275,10 +278,24 @@ document.addEventListener('keydown', (e) => {
 
   function syncHintButton() {
     const btn = el('hint-btn');
-    if (!btn) return;
+    const iconsContainer = el('hint-icons');
+    if (!btn || !iconsContainer) return;
+
     btn.textContent = 'Hint';
     const allSolved = wordSolved.every(s => s);
-    if (hintsUsed >= 2 || isGameOver || allSolved) {
+    const maxHints = 2;
+    const remainingHints = maxHints - hintsUsed;
+
+    // Render bulb icons (only remaining ones)
+    iconsContainer.innerHTML = '';
+    for (let i = 0; i < remainingHints; i++) {
+      const img = document.createElement('img');
+      img.src = '/hint-icon.png';
+      img.className = 'hint-bulb';
+      iconsContainer.appendChild(img);
+    }
+
+    if (hintsUsed >= maxHints || isGameOver || allSolved) {
       btn.disabled = true;
     } else {
       btn.disabled = false;
@@ -292,6 +309,7 @@ document.addEventListener('keydown', (e) => {
     const index = wordSolved.indexOf(false);
     if (index !== -1) {
       wordSolved[index] = true;
+      wordRevealedByHint[index] = true;
       hintsUsed++;
 
       // Update UI
@@ -301,7 +319,7 @@ document.addEventListener('keydown', (e) => {
       // If that was the last word, end the game
       if (wordSolved.every(s => s)) {
         isGameOver = true;
-        showGameOverModal(true);
+        setTimeout(() => showGameOverModal(true), 800);
       }
     }
   }
@@ -326,6 +344,12 @@ document.addEventListener('keydown', (e) => {
         input.disabled = true;
         area.classList.remove('active');
         area.classList.add('correct');
+
+        if (wordRevealedByHint[i]) {
+          area.classList.add('revealed');
+        } else {
+          area.classList.remove('revealed');
+        }
       } else {
         // Track the first available slot to focus if needed
         if (firstUnsolved === -1) firstUnsolved = i;
@@ -470,7 +494,7 @@ document.addEventListener('keydown', (e) => {
         renderGrid();
         isGameOver = true;
         syncHintButton();
-        showGameOverModal(true);
+        setTimeout(() => showGameOverModal(true), 800);
       } else {
         // incorrect combined guess
         incorrectCount = Math.min(maxIndicators, incorrectCount + 1);
@@ -509,7 +533,7 @@ document.addEventListener('keydown', (e) => {
         if (incorrectCount >= maxIndicators) {
           isGameOver = true;
           syncHintButton();
-          showGameOverModal(false);
+          setTimeout(() => showGameOverModal(false), 800);
         }
         renderGrid();
       }
