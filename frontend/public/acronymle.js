@@ -254,6 +254,10 @@ document.addEventListener('keydown', (e) => {
     activeWord = 0;
     lastGuessWasCorrect = false;
 
+    // Hide show-results button
+    const showResultsBtn = el('show-results-btn');
+    if (showResultsBtn) showResultsBtn.style.display = 'none';
+
     // Reset indicators
     for (let i = 0; i < maxIndicators; i++) {
       const ind = document.querySelector(`#guess-indicators .indicator[data-index="${i}"]`);
@@ -674,6 +678,26 @@ document.addEventListener('keydown', (e) => {
     const hintBtn = el('hint-btn');
     if (hintBtn) {
       hintBtn.addEventListener('click', giveHint);
+    }
+
+    // Wire up View Board button
+    const viewBoardBtn = el('view-board-btn');
+    if (viewBoardBtn) {
+      viewBoardBtn.addEventListener('click', () => {
+        hideGameOverModal();
+        const showResultsBtn = el('show-results-btn');
+        if (showResultsBtn) showResultsBtn.style.display = 'block';
+      });
+    }
+
+    // Wire up Show Results button
+    const showResultsBtn = el('show-results-btn');
+    if (showResultsBtn) {
+      showResultsBtn.addEventListener('click', () => {
+        showResultsBtn.style.display = 'none';
+        const modal = el('game-over-modal');
+        if (modal) modal.style.display = 'flex';
+      });
     }
   });
 
