@@ -52,6 +52,7 @@ document.addEventListener('keydown', (e) => {
   // Locked state for individual words
   let wordSolved = [false, false, false];
   let wordRevealedByHint = [false, false, false];
+  let wordIncorrect = [false, false, false];
   let hintsUsed = 0;
 
   let solutionWords = ['on', 'the', 'way'];
@@ -92,6 +93,7 @@ document.addEventListener('keydown', (e) => {
     }
     wordSolved = [false, false, false];
     wordRevealedByHint = [false, false, false];
+    wordIncorrect = [false, false, false];
     hintsUsed = 0;
     activeWord = 0;
     syncHintButton();
@@ -250,6 +252,7 @@ document.addEventListener('keydown', (e) => {
     currentGuesses = ['', '', ''];
     wordSolved = [false, false, false];
     wordRevealedByHint = [false, false, false];
+    wordIncorrect = [false, false, false];
     hintsUsed = 0;
     activeWord = 0;
     lastGuessWasCorrect = false;
@@ -346,7 +349,7 @@ document.addEventListener('keydown', (e) => {
         // If the specific word is solved, lock it to correct
         input.value = (solutionWords[i] || '').toUpperCase();
         input.disabled = true;
-        area.classList.remove('active');
+        area.classList.remove('active', 'wrong');
         area.classList.add('correct');
 
         if (wordRevealedByHint[i]) {
@@ -354,13 +357,19 @@ document.addEventListener('keydown', (e) => {
         } else {
           area.classList.remove('revealed');
         }
+      } else if (wordIncorrect[i]) {
+        // If the word was wrong on the final guess
+        input.value = ((lockedFirstLetters[i] || '').toUpperCase()) + (currentGuesses[i] || '').toUpperCase();
+        input.disabled = true;
+        area.classList.remove('active', 'correct', 'revealed');
+        area.classList.add('wrong');
       } else {
         // Track the first available slot to focus if needed
         if (firstUnsolved === -1) firstUnsolved = i;
 
         input.value = ((lockedFirstLetters[i] || '').toUpperCase()) + (currentGuesses[i] || '').toUpperCase();
         input.disabled = false;
-        area.classList.remove('correct');
+        area.classList.remove('correct', 'revealed', 'wrong');
         if (i === activeWord) {
           area.classList.add('active');
         } else {
@@ -515,10 +524,25 @@ document.addEventListener('keydown', (e) => {
         renderWrongGuesses();
         lastGuessWasCorrect = false;
 
-        // Clear incorrect guesses (keep locked/solved ones)
+        // Clear incorrect guesses (keep locked/solved ones) and show flash
+        const gameLost = (incorrectCount >= maxIndicators);
+
         for (let i = 0; i < 3; i++) {
           if (!wordSolved[i]) {
-            currentGuesses[i] = '';
+            if (gameLost) {
+              wordIncorrect[i] = true;
+              // DO NOT clear currentGuesses[i] so the failed guess stays visible
+            } else {
+              currentGuesses[i] = '';
+              // Trigger red flash animation only if not the final guess
+              const area = el(`input-area-${i}`);
+              if (area) {
+                area.classList.remove('shake-error');
+                void area.offsetWidth; // Trigger reflow
+                area.classList.add('shake-error');
+                setTimeout(() => area.classList.remove('shake-error'), 600);
+              }
+            }
           }
         }
 
