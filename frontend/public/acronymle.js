@@ -289,20 +289,14 @@ document.addEventListener('keydown', (e) => {
     if (!btn || !iconsContainer) return;
 
     btn.textContent = 'Hint';
-    const allSolved = wordSolved.every(s => s);
-    const maxHints = 2;
-    const remainingHints = maxHints - hintsUsed;
 
-    // Render bulb icons (only remaining ones)
+    // Clear bulb icons as there is no fixed number limit anymore
     iconsContainer.innerHTML = '';
-    for (let i = 0; i < remainingHints; i++) {
-      const img = document.createElement('img');
-      img.src = '/hint-icon.png';
-      img.className = 'hint-bulb';
-      iconsContainer.appendChild(img);
-    }
 
-    if (hintsUsed >= maxHints || isGameOver || allSolved) {
+    const unsolvedCount = wordSolved.filter(s => !s).length;
+
+    // No limit to hint, but if there is only 1 word left, a hint cannot be used
+    if (isGameOver || unsolvedCount <= 1) {
       btn.disabled = true;
     } else {
       btn.disabled = false;
@@ -310,7 +304,8 @@ document.addEventListener('keydown', (e) => {
   }
 
   function giveHint() {
-    if (hintsUsed >= 2 || isGameOver) return;
+    const unsolvedCount = wordSolved.filter(s => !s).length;
+    if (isGameOver || unsolvedCount <= 1) return;
 
     // Find first unsolved word
     const index = wordSolved.indexOf(false);
@@ -322,12 +317,6 @@ document.addEventListener('keydown', (e) => {
       // Update UI
       renderGrid();
       syncHintButton();
-
-      // If that was the last word, end the game
-      if (wordSolved.every(s => s)) {
-        isGameOver = true;
-        setTimeout(() => showGameOverModal(true), 800);
-      }
     }
   }
 
