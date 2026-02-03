@@ -114,18 +114,64 @@
 }
 
 body {
-  font-family: Arial, sans-serif;
+  font-family: 'Baloo 2', Arial, sans-serif;
   background-color: #f9fafb;
   display: flex;
   justify-content: center;
   align-items: flex-start;
-  /* changed from center to flex-start */
   min-height: 100vh;
-  padding: 20px;
+  margin: 0;
+  padding: 0;
 }
 
-/* Layout: main wrapper with game area on the left and a right-side panel for wrong guesses */
-/* Layout: main wrapper with game area on the left and a right-side panel for wrong guesses */
+.navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 48px;
+  background: rgba(254, 240, 138, 0.95);
+  /* Balanced Light Yellow (Yellow-200) */
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  /* Darker border for contrast on yellow */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.navbar-container {
+  width: 100%;
+  max-width: 1000px;
+  padding: 0 20px;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+}
+
+.logo {
+  font-family: 'Fredoka One', cursive;
+  font-size: 1.75rem;
+  margin: 0;
+  color: #111827;
+  /* Dark charcoal/black */
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  cursor: pointer;
+  user-select: none;
+  transition: transform 0.2s ease;
+  text-shadow: none;
+  /* Removed shadow for cleaner look on black text */
+}
+
+.logo:hover {
+  transform: scale(1.05);
+}
+
 .game-wrapper {
   display: flex;
   flex-direction: column;
@@ -133,9 +179,9 @@ body {
   width: 100%;
   max-width: 1000px;
   align-items: center;
-  min-height: calc(100vh - 80px);
-  /* Use viewport height to push keyboard down */
-  margin-top: 60px;
+  min-height: calc(100vh - 48px);
+  margin-top: 68px;
+  /* Space for skinnier fixed navbar */
 }
 
 .main-content-row {
@@ -282,23 +328,11 @@ body {
   }
 }
 
-h1 {
-  position: absolute;
-  top: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 2rem;
-  margin: 0;
-  color: #1f2937;
-  text-align: center;
-  z-index: 10;
-}
-
-/* Slightly reduce title size on small screens */
-@media (max-width: 420px) {
-  h1 {
+/* Logo adjustments for mobile */
+@media (max-width: 480px) {
+  .logo {
     font-size: 1.5rem;
-    top: 14px;
+    letter-spacing: 0.08em;
   }
 }
 
