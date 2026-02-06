@@ -10,6 +10,37 @@
   <link
     href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Fredoka+One&family=Baloo+2:wght@700&display=swap"
     rel="stylesheet">
+  <style>
+    /* Stats Styles */
+    .stats-container {
+      display: flex;
+      justify-content: center;
+      gap: 40px;
+      margin-bottom: 30px;
+    }
+
+    .stat-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .stat-value {
+      font-family: 'Fredoka One', cursive;
+      font-size: 2.5rem;
+      font-weight: 800;
+      color: #111827;
+    }
+
+    .stat-label {
+      font-family: 'Baloo 2', Arial, sans-serif;
+      font-size: 0.9rem;
+      color: #6b7280;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-weight: 600;
+    }
+  </style>
 </head>
 
 <body>
@@ -82,6 +113,16 @@
       <div class="solution-box">
         <span class="solution-label">Solution:</span>
         <span id="modal-solution" class="solution-text">ON THE WAY</span>
+      </div>
+      <div class="stats-container">
+        <div class="stat-item">
+          <span id="stats-guesses" class="stat-value">0</span>
+          <span class="stat-label">Guesses</span>
+        </div>
+        <div class="stat-item">
+          <span id="stats-hints" class="stat-value">0</span>
+          <span class="stat-label">Hints</span>
+        </div>
       </div>
       <div class="modal-buttons">
         <button id="view-board-btn" class="view-board-btn">View Board</button>

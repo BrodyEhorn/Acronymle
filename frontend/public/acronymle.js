@@ -229,14 +229,20 @@ document.addEventListener('keydown', (e) => {
     const content = modal.querySelector('.modal-content');
     const title = el('modal-title');
     const solutionStr = el('modal-solution');
+    const statsGuesses = el('stats-guesses');
+    const statsHints = el('stats-hints');
 
     if (win) {
       title.textContent = 'You Won!';
       content.className = 'modal-content win';
+      if (statsGuesses) statsGuesses.textContent = (incorrectCount + 1).toString();
     } else {
       title.textContent = 'Game Over';
       content.className = 'modal-content loss';
+      if (statsGuesses) statsGuesses.textContent = maxIndicators.toString();
     }
+
+    if (statsHints) statsHints.textContent = hintsUsed.toString();
 
     solutionStr.textContent = combinedSolution.toUpperCase();
     modal.style.display = 'flex';
