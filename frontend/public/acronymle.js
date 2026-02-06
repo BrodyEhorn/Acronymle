@@ -3,16 +3,17 @@ document.addEventListener('keydown', (e) => {
   // Ignore if a modal, alert, or other input is focused
   const tag = (document.activeElement && document.activeElement.tagName) || '';
   if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || tag === 'BUTTON') return;
-  // Only handle letter keys, Enter, and Backspace
+  // Only handle letter keys, apostrophe, Enter, and Backspace
   const isLetter = /^[a-zA-Z]$/.test(e.key);
-  if (!isLetter && e.key !== 'Enter' && e.key !== 'Backspace') return;
+  const isApostrophe = e.key === "'";
+  if (!isLetter && !isApostrophe && e.key !== 'Enter' && e.key !== 'Backspace') return;
   // Route the event to the currently active input
   const input = document.getElementById(`guess-input-${activeWord}`);
   if (input) {
     input.focus();
-    // For letters, append to input
-    if (isLetter) {
-      // Simulate typing by appending the letter
+    // For letters or apostrophe, append to input
+    if (isLetter || isApostrophe) {
+      // Simulate typing by appending the character
       const val = input.value + e.key.toUpperCase();
       input.value = val;
       input.dispatchEvent(new Event('input', { bubbles: true }));
@@ -595,8 +596,8 @@ document.addEventListener('keydown', (e) => {
       ((index) => {
         input.addEventListener('input', (e) => {
           let v = String(e.target.value || '');
-          // remove non-letters
-          v = v.replace(/[^a-zA-Z]/g, '');
+          // remove non-letters (except apostrophe)
+          v = v.replace(/[^a-zA-Z']/g, '');
           // if the user removed or changed the first char, re-insert lockedFirstLetter at start
           if (!lockedFirstLetters[index]) lockedFirstLetters[index] = '';
           if (v.length === 0) {
@@ -635,7 +636,7 @@ document.addEventListener('keydown', (e) => {
             }
             // otherwise allow backspace and sync currentGuess on next tick
             setTimeout(() => {
-              const v = input.value.replace(/[^a-zA-Z]/g, '');
+              const v = input.value.replace(/[^a-zA-Z']/g, '');
               const suffix = v.slice(1, 1 + (maxSuffixLens[index] || 11));
               currentGuesses[index] = suffix.toLowerCase();
               renderGrid();
