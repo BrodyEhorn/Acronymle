@@ -57,6 +57,7 @@ document.addEventListener('keydown', (e) => {
   let hintsUsed = 0;
 
   let solutionWords = ['on', 'the', 'way'];
+  let wordFirstLetterRejected = [false, false, false];
   let currentCategory = '';
   let combinedSolution = solutionWords.join(' ');
   // locked first letters per word (auto-filled from solutionWords)
@@ -97,6 +98,7 @@ document.addEventListener('keydown', (e) => {
     wordIncorrect = [false, false, false];
     hintsUsed = 0;
     activeWord = 0;
+    wordFirstLetterRejected = [false, false, false];
     syncHintButton();
   }
 
@@ -256,6 +258,7 @@ document.addEventListener('keydown', (e) => {
     wordIncorrect = [false, false, false];
     hintsUsed = 0;
     activeWord = 0;
+    wordFirstLetterRejected = [false, false, false];
     lastGuessWasCorrect = false;
 
     // Hide show-results button
@@ -608,12 +611,28 @@ document.addEventListener('keydown', (e) => {
 
           // Ensure first char equals lockedFirstLetter for this word
           const first = v.charAt(0).toLowerCase();
-          if (first !== (lockedFirstLetters[index] || '').toLowerCase()) {
-            v = (lockedFirstLetters[index] || '') + v; // re-insert locked first letter
+          const locked = (lockedFirstLetters[index] || '').toLowerCase();
+          if (first !== locked) {
+            v = locked + v; // re-insert locked first letter
           }
 
-          // trim to locked + suffix letters
-          const suffix = v.slice(1, 1 + (maxSuffixLens[index] || 11));
+          // Refinement: If user re-types the first letter when suffix is empty, ignore it ONLY THE FIRST TIME.
+          // e.g. Input is "A", user types "A", v becomes "AA". 
+          // If !wordFirstLetterRejected[index], we swallow the second "A" and set the flag.
+          // If they type "A" again immediately, wordFirstLetterRejected is true, so we allow "AA".
+          let suffix = v.slice(1);
+          if (suffix.length === 1 && suffix.toLowerCase() === locked && currentGuesses[index] === '') {
+            if (!wordFirstLetterRejected[index]) {
+              wordFirstLetterRejected[index] = true;
+              suffix = '';
+            }
+          } else if (suffix.length > 0 || v.length === 0) {
+            // Reset the rejection flag if they type a different letter or backspace to empty
+            wordFirstLetterRejected[index] = false;
+          }
+
+          // trim to max suffix length
+          suffix = suffix.slice(0, (maxSuffixLens[index] || 11));
           currentGuesses[index] = suffix.toLowerCase();
 
           // set displayed value to locked + suffix uppercase
