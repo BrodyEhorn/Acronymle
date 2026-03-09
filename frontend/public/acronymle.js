@@ -56,7 +56,7 @@ document.addEventListener('keydown', (e) => {
   let wordIncorrect = [false, false, false];
   let hintsUsed = 0;
 
-  let solutionWords = ['on', 'the', 'way'];
+  let solutionWords = ['BACKEND', 'NOT', 'REACHED'];
   let wordFirstLetterRejected = [false, false, false];
   let currentCategory = '';
   let combinedSolution = solutionWords.join(' ');
@@ -69,7 +69,7 @@ document.addEventListener('keydown', (e) => {
   // Load the solution from the backend API
   async function loadSolution() {
     try {
-      const response = await fetch('http://localhost:5000/api/solution');
+      const response = await fetch('http://127.0.0.1:5000/api/solution', { cache: 'no-store' });
       if (!response.ok) throw new Error('Network response was not ok');
       const data = await response.json();
 
@@ -81,6 +81,7 @@ document.addEventListener('keydown', (e) => {
       currentCategory = data.category || '';
     } catch (err) {
       console.error('Failed to fetch solution:', err);
+      showToast('Could not connect to backend server. Using fallback acronym.', 'error');
       // Fallback or keep default
     }
 
