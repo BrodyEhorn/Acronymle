@@ -613,6 +613,7 @@ body {
   box-shadow: 0 15px 35px rgba(0, 0, 0, 0.25);
   transform: scale(0.8);
   opacity: 0;
+  font-family: 'Fredoka One', cursive;
   animation: modalEnter 0.3s forwards cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
@@ -624,7 +625,6 @@ body {
 }
 
 .modal-content h2 {
-  font-family: Arial, sans-serif;
   font-size: 2.8rem;
   font-weight: 800;
   margin-bottom: 16px;
@@ -632,7 +632,6 @@ body {
 }
 
 .modal-content p {
-  font-family: Arial, sans-serif;
   font-size: 1.2rem;
   color: #374151;
   margin-bottom: 32px;
@@ -675,6 +674,7 @@ body {
   color: white;
   border: none;
   padding: 14px 30px;
+  font-family: 'Fredoka One', cursive;
   font-size: 1.1rem;
   font-weight: 700;
   border-radius: 6px;
@@ -688,6 +688,7 @@ body {
   color: #374151;
   border: 1px solid #d1d5db;
   padding: 14px 30px;
+  font-family: 'Fredoka One', cursive;
   font-size: 1.1rem;
   font-weight: 700;
   border-radius: 6px;
@@ -720,6 +721,7 @@ body {
   border: none;
   padding: 12px 20px;
   border-radius: 999px;
+  font-family: 'Fredoka One', cursive;
   font-weight: 700;
   cursor: pointer;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
