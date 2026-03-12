@@ -34,6 +34,7 @@ Gemini should update this file whenever significant project milestones or change
 - **Major Features**: When core game mechanics or significant UI components are implemented.
 
 ## Recent Activity
+- Added `npm run build` as a root command to trigger the frontend production build.
 - Combined frontend and backend start commands into `npm run dev`.
 - Migrated backend to Flask (Python).
 - Improved "Guesses" panel UI (widened to 500px, enabled wrapping for long words).
