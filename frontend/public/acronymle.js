@@ -65,11 +65,15 @@ document.addEventListener('keydown', (e) => {
   // number of editable characters (word length - 1) per word (allow up to 9)
   let maxSuffixLens = [11, 11, 11]; // Always allow 11 suffix chars (plus 1 locked letter = 12 total)
 
+  const API_BASE_URL = window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost'
+    ? 'http://127.0.0.1:5000'
+    : 'https://BrodyEhorn.pythonanywhere.com';
+
   // Load the solution locally. API calls are disabled for now (TODO: re-enable later).
   // Load the solution from the backend API
   async function loadSolution() {
     try {
-      const response = await fetch('http://127.0.0.1:5000/api/solution', { cache: 'no-store' });
+      const response = await fetch(`${API_BASE_URL}/api/solution`, { cache: 'no-store' });
       if (!response.ok) throw new Error('Network response was not ok');
       const data = await response.json();
 
