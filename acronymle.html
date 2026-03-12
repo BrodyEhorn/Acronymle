@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Acronymle</title>
+  <link rel="stylesheet" href="/acronymle.css">
+  <link rel="stylesheet" href="/toast.css">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&family=Fredoka+One&family=Baloo+2:wght@700&display=swap"
+    rel="stylesheet">
+  <style>
+    /* Stats Styles */
+    .stats-container {
+      display: flex;
+      justify-content: center;
+      gap: 40px;
+      margin-bottom: 30px;
+    }
+
+    .stat-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .stat-value {
+      font-family: 'Fredoka One', cursive;
+      font-size: 2.5rem;
+      font-weight: 800;
+      color: #111827;
+    }
+
+    .stat-label {
+      font-family: 'Fredoka One', cursive;
+      font-size: 0.9rem;
+      color: #6b7280;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-weight: 600;
+    }
+  </style>
+</head>
+
+<body>
+  <header class="navbar">
+    <div class="navbar-container">
+      <div class="nav-left"></div>
+      <h1 class="logo">Acronymle</h1>
+      <div class="nav-right"></div>
+    </div>
+  </header>
+
+  <div class="game-wrapper">
+    <div class="main-content-row">
+      <div class="container">
+
+
+        <!-- Acronym display (e.g., O.T.W.) -->
+        <div id="acronym-display" class="acronym-display" aria-label="Acronym"></div>
+        <div id="category-display" class="category-display" aria-label="Category"></div>
+
+        <!-- Guess indicators: one box per allowed incorrect guess -->
+        <div id="guess-indicators" class="indicators" aria-hidden="true">
+          <div class="indicator" data-index="0"></div>
+          <div class="indicator" data-index="1"></div>
+          <div class="indicator" data-index="2"></div>
+          <div class="indicator" data-index="3"></div>
+          <div class="indicator" data-index="4"></div>
+        </div>
+
+        <!-- Three input rows: each word in the acronym -->
+        <div id="input-rows">
+          <div id="input-area-0" class="input-area input-row">
+            <input id="guess-input-0" class="guess-input" type="text" maxlength="12" autocomplete="off"
+              inputmode="latin" />
+          </div>
+          <div id="input-area-1" class="input-area input-row">
+            <input id="guess-input-1" class="guess-input" type="text" maxlength="12" autocomplete="off"
+              inputmode="latin" />
+          </div>
+          <div id="input-area-2" class="input-area input-row">
+            <input id="guess-input-2" class="guess-input" type="text" maxlength="12" autocomplete="off"
+              inputmode="latin" />
+          </div>
+        </div>
+        <!-- Hint Section -->
+        <div class="hint-section">
+          <button id="hint-btn" class="hint-btn">Hint</button>
+          <div id="hint-icons" class="hint-icons"></div>
+        </div>
+      </div>
+
+      <!-- Right-side panel for guesses -->
+      <aside id="wrong-list" class="wrong-list" aria-live="polite">
+        <h2>Guesses</h2>
+        <ul id="wrong-guesses" class="wrong-guesses"></ul>
+      </aside>
+    </div>
+
+    <div class="keyboard">
+      <div class="keyboard-row" id="row1"></div>
+      <div class="keyboard-row" id="row2"></div>
+      <div class="keyboard-row" id="row3"></div>
+    </div>
+  </div>
+
+  <!-- Game Over Modal -->
+  <div id="game-over-modal" class="modal-overlay" style="display: none;">
+    <div class="modal-content">
+      <h2 id="modal-title">You Won!</h2>
+      <div class="solution-box">
+        <span class="solution-label">Solution:</span>
+        <span id="modal-solution" class="solution-text">ON THE WAY</span>
+      </div>
+      <div class="stats-container">
+        <div class="stat-item">
+          <span id="stats-guesses" class="stat-value">0</span>
+          <span class="stat-label">Guesses</span>
+        </div>
+        <div class="stat-item">
+          <span id="stats-hints" class="stat-value">0</span>
+          <span class="stat-label">Hints</span>
+        </div>
+      </div>
+      <div class="modal-buttons">
+        <button id="view-board-btn" class="view-board-btn">View Board</button>
+        <button id="play-again-btn" class="play-again-btn">Play Again</button>
+      </div>
+    </div>
+  </div>
+  <button id="show-results-btn" class="show-results-btn">Show Results</button>
+
+  <!-- Game logic is loaded from an external file for clarity -->
+  <script src="/acronymle.js" defer></script>
+</body>
+
+</html>
