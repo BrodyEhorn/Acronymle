@@ -1,13 +1,13 @@
 {
   "files": {
     "main.css": "/Acronymle/static/css/main.73ef29fe.css",
-    "main.js": "/Acronymle/static/js/main.9be037e7.js",
+    "main.js": "/Acronymle/static/js/main.f548efcc.js",
     "index.html": "/Acronymle/index.html",
     "main.73ef29fe.css.map": "/Acronymle/static/css/main.73ef29fe.css.map",
-    "main.9be037e7.js.map": "/Acronymle/static/js/main.9be037e7.js.map"
+    "main.f548efcc.js.map": "/Acronymle/static/js/main.f548efcc.js.map"
   },
   "entrypoints": [
     "static/css/main.73ef29fe.css",
-    "static/js/main.9be037e7.js"
+    "static/js/main.f548efcc.js"
   ]
 }
